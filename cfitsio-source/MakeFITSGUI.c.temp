@@ -1,0 +1,130 @@
+/*
+
+	makefits.c
+
+	born 020626
+
+	author jake
+
+	version 021016
+
+*/
+
+#include <jni.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include "fitsio.h"
+#include "MakeFITSGUI.h"
+
+#define MAX_LINE_LENGTH 50
+#define MAX_KEYWORD_LENGTH 12
+#define MAX_DESC_LENGTH 80	
+#define DEBUG
+
+
+JNIEXPORT void JNICALL Java_MakeFITSGUI_MakeFITS
+  (JNIEnv *jenv, jobject jobj)
+{
+	struct tm *currenttime;
+	time_t caltime;
+	char filename[30]="\0", fileorig[17]="\0", tempfilename[30]="\0", temp[FLEN_COMMENT]="\0";
+        FILE *fp;
+        short int naxis, charint, i;
+
+	caltime = time ( NULL );
+	currenttime =  gmtime( &caltime );
+
+/*	S = Spacecraft (a,b,d) (d is for "development", or anything
+		that is not associated with one or the other s/c);
+	T = a digit representing telescope: 1=EUVI, 2=COR1, 3=COR2,
+		4=HI1, 5=HI2, 6=GT, 0=generic "development";
+	L = a digit representing number of images used to create
+		this image, 0 if > 9;
+*/
+
+	sprintf (filename, "cxx_%04i%02i%02i_%02i%02i%02i.fts",
+		(*currenttime).tm_year+1900,
+		(*currenttime).tm_mon+1,
+		(*currenttime).tm_mday,
+		(*currenttime).tm_hour,
+		(*currenttime).tm_min,
+		(*currenttime).tm_sec);
+
+
+	#ifdef DEBUG
+		printf ("Version : 021016\n");
+	#endif
+
+	printf ("Output filename: %s\n",filename);
+
+	strcpy (tempfilename, "ccd42_5_23_l.img" );
+	strcat (tempfilename, "[ul");
+
+	if (( fp = fopen ("ccd42_5_23_l.img", "rb" )) == NULL ) {
+		printf ("Cannot open file");
+		exit(1);
+	}
+	fread ( &naxis, 1, 2, fp );		//read first 2 bytes from img file
+
+	sprintf(temp, "%u", naxis);
+	strcat(tempfilename, temp);
+	strcat(tempfilename, ",");
+
+        fread ( &naxis, 1, 2, fp );		//read second 2 bytes from img file
+	sprintf(temp,"%u", naxis);
+	strcat(tempfilename, temp);
+	strcat (tempfilename, ":4]");
+        fclose (fp);
+
+	fitscopy ( tempfilename, filename );
+	addkey ( filename, "FILENAME", filename );
+	addkey ( filename, "FILEORIG", "ccd42_5_23_l.img" );	//argv[1] );
+	sprintf (temp, "%04i-%02i-%02it%02i:%02i:%02i.???",
+		(*currenttime).tm_year+1900,
+		(*currenttime).tm_mon+1,
+		(*currenttime).tm_mday,
+		(*currenttime).tm_hour,
+		(*currenttime).tm_min,
+		(*currenttime).tm_sec);
+	addkey ( filename, "DATE-OBS", temp );
+	addkey ( filename, "DATE", temp );
+	addkey ( filename, "HISTORY", "Converted from IMG to FITS using Jake's makefits." );
+	sprintf (temp, "Compiled from %s on %s %s.", __FILE__, __TIME__, __DATE__);
+	addkey ( filename, "COMMENT", temp );
+	addkey ( filename, "ORIGIN", "NRL");
+
+	if (( fp = fopen ("ccd42_5_23_l.img", "rb" )) == NULL ) {
+                printf ("Cannot open file");
+                exit(1);
+        }
+
+	if ( fseek ( fp, (2*2560*2048)+4, SEEK_SET)) {
+		printf ("Failed Seek");
+	}
+	else 
+	{	
+		while ( !feof(fp) ) {
+			strncpy(temp, "", FLEN_COMMENT);
+			fgets ( temp, FLEN_COMMENT, fp );
+			for (i=0; i<FLEN_COMMENT; i++) {
+				if ( !isprint(temp[i])) 
+					temp[i]='\0';
+			}
+			addkey ( filename, "COMMENT", temp );
+			#ifdef DEBUG	
+				printf ( "Adding COMMENT from bottom of IMG file:\n" );
+				printf ( "%s\n", temp );		
+			#endif
+		}
+	}
+	
+	fclose(fp);
+
+
+
+	return;
+}
+
+

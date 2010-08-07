@@ -1,0 +1,77 @@
+#! /bin/sh -vax
+#
+#	MakeRawLZCDs
+#
+#
+#	born	011113
+#		by	theJake
+#
+#	purpose	to create the LZ CDs which will no longer be provided
+#			by the ISTP.
+#
+#	020301 - Jake - moved internal SOSizeToDo to external "SizeToDo SO"
+#			attempting to use external ftp-urania-size
+#	020620 - jake - began adding checks for $CDISOS for after a restore
+#
+
+CDMAX=`jget CDMAX`
+
+RAWLZCD=`pwd`
+CDISOS=$RAWLZCD/CDIMAGES
+CDROOT=$RAWLZCD/CDSOURCE
+CDLGS=$RAWLZCD/CDLOGS
+CDLTS=$RAWLZCD/CDLISTS
+CDSTATUS=$RAWLZCD/CDSTATUS
+SOCDRAW=$RAWLZCD/SOCDRAW
+LOG=$RAWLZCD/cdlog
+
+#if [ ! -d $SOCDRAW ]; then mkdir -p $SOCDRAW; fi
+#if [ ! -d $RAWLZCD/download ]; then mkdir -p $RAWLZCD/download; fi
+if [ ! -d $CDISOS ]; then mkdir -p $CDISOS; fi
+if [ ! -d $CDROOT ]; then mkdir -p $CDROOT; fi
+
+GetNewData
+
+#while [ `SizeToDo SO` -gt `jget so.LAGSIZE` ]
+while [ `DaysToDo so` -gt `jget so.LAG` ]
+do
+#	CDNUM=`cat $LOG | gawk '{cdnum=$1} END {print cdnum}'`
+	CDNUM=`tail -1 $LOG | gawk '{print $1}'`
+
+	STATUSLOG=$CDSTATUS/$CDNUM.status
+	sh $RAWLZCD/BuildRawCDList $CDNUM
+	sh $RAWLZCD/CopyRawCDFiles $CDNUM
+
+	cd $CDROOT
+	tree -ls >> $RAWLZCD/Contents/so_eitla_lz_$CDNUM
+	/bin/ls -lL data/so/g031/lz/*d01 >> $RAWLZCD/Contents/so_eitla_lz_$CDNUM
+
+	echo "  Creating cd image ... "
+	ISONAME=SO_EITLA_LZ_$CDNUM.iso
+	$bin/mkisofs -o $CDISOS/$ISONAME -r -v -l -f -J -V usa_nasa_ddf_so_eitla_lz_$CDNUM $CDROOT
+	/bin/echo "Image Made:\t\c" >> $STATUSLOG
+	date >> $STATUSLOG
+	/usr/ucb/mail -s "Made CD Image for SO_EITLA_LZ_$CDNUM" $OPERATOR < /dev/null
+
+	cd $CDISOS
+	$bin/jpush $ISONAME urania
+	HerculesSize=`/bin/ls -l $ISONAME | gawk '{print $5}'`
+	HerculesSize=${HerculesSize:-1}
+	#	UraniaSize=`printf "%s\n" "dir" | ftp urania | grep $ISONAME | gawk '{print $5}'`	#	SmartFTP
+	#UraniaSize=`printf "%s\n" "dir" | ftp urania | grep $ISONAME | gawk '{print $3}'`	#	FtpXQ
+	UraniaSize=`ftp-urania-size $ISONAME`
+	UraniaSize=${UraniaSize:-0}
+
+	if [ $HerculesSize -eq $UraniaSize ]
+	then
+		/bin/rm $ISONAME
+		echo "  Moved $ISONAME to urania."
+		/usr/ucb/echo -n "To Urania:   " >> $STATUSLOG
+		date >> $STATUSLOG
+		/usr/ucb/mail -s "Moved $ISONAME to urania.  Awaiting a burn." $OPERATOR < /dev/null
+	fi
+done
+
+#
+#	end MakeRawLZCDs script
+#

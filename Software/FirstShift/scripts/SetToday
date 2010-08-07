@@ -1,0 +1,21 @@
+#! /bin/sh -a
+#
+#
+#	begin script SetToday
+#
+#	author:	the Jake
+#	born:	000626
+#
+#	part of FirstShift
+#
+#	purpose:	writes TODAY's date in file in different formats
+#
+
+echo "  Setting date for tomorrow..."
+echo
+echo `date +%y%m%d` > $FIRST_DIR/scripts/y_rel
+echo "`date +%b` `date +%e`" > $FIRST_DIR/scripts/y_qkl
+
+#
+#	end script SetToday
+#

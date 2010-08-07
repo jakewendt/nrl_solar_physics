@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>Raw SO_EITLA_LZ CDs</title>
+</head>
+<body>
+
+<table width="100%" height="100%" >
+<tr><td VALIGN="TOP">
+<h3 align="CENTER">Raw SO_EITLA_LZ CDs</h3>
+<p>
+<p>ISTP has ceased production of the SO_EITLA_LZ series of raw data lz cds.
+I wrote this software to selectively download the same data and burn it to CDROM.
+Unfortunately, it appears that the orbit and attitude data will not be on these CDs.
+Nathan is taking care of this some other way.
+
+<p>To download new data, run GetNewData.  After some data is downloaded, 
+the "lastday" is recorded in the "lastday" file.  
+
+<p>Before running MakeRawLZCDs, set "lastday" to the last day used in
+the "cdlog" file.  Rerun GetNewData.  Then check the files and make sure that
+there aren't 2 versions of files because the first was updated for some
+reason.  If there are 2 versions, delete the oldest ones and continue on.
+
+<p>To download new data and begin creating CDs, run MakeRawLZCDs
+
+<p>To remake an ISO, make sure that the CD list and CD status files 
+are in the appropriate directories.  Then run RemakeCD [1234].
+
+
+
+</td></tr>
+</table>
+</body>
+</html>
+

@@ -1,0 +1,17 @@
+#!/bin/sh
+
+echo Content-type: text/html
+echo
+
+cat << EOF
+<HTML>
+<h3>List of Old Status files</h3>
+<br>
+
+EOF
+
+cd /home/reduce/logs
+/bin/ls -1rd status* | /usr/bin/awk '{print "<a href=\"/~reduce/logs/"$0"\">"$0"</a><br>"}'
+
+echo "</HTML>"
+

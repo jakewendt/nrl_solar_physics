@@ -1,0 +1,11 @@
+#!/bin/sh
+
+echo Content-type: text/html
+echo
+
+echo "<HTML>"
+cd /net/hera/mvi/rtmovie/gifs/
+/bin/ls -r1digo * | /usr/bin/awk '{print $0"<br>"}'
+
+echo "</HTML>"
+

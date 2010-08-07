@@ -1,0 +1,41 @@
+#! /bin/sh
+#
+#
+#	begin script VerifyCDFiles
+#
+#	author:	the Jake
+#	born:	000705
+#
+#	modification:
+#		000719 - the Jake - including jget technique
+#
+
+CDLTS=`pwd`
+TYPE=$1
+CDNUM=$2
+
+CDDIR='/juke/lz_05'
+CDPATH=$CDDIR/$CDNUM/
+
+echo "  Copying jpgs, Reading headers and reviewing content..."
+
+copyspecjpegs $TYPE $CDNUM
+readspecheaders $TYPE $CDNUM
+
+cd $CDPATH
+ls -1d */*/*/*fts | gawk -F. '{print $1}' > $CDLTS/tempcd.list
+
+if [ -z "`diff $CDLTS/$TYPE.$CDNUM.list $CDLTS/tempcd.list`" ]
+then
+	echo "  No difference between existing and expected files."
+	echo
+else
+	echo "  ERROR: Difference between existing and expected files:"
+	diff $CDLTS/$TYPE.$CDNUM.list $CDLTS/tempcd.list
+fi
+
+exit	#	Clean Exit
+
+#
+#	end script VerifyCDFiles
+#

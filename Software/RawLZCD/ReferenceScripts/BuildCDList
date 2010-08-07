@@ -1,0 +1,158 @@
+#! /bin/sh
+#
+#	begin script BuildCDList
+#
+#	author:	the Jake
+#	born:	000702
+#
+#
+
+Usage () 
+{
+	echo
+	echo "Usage:  BuildCDList CDTYPE"
+	echo "CDTYPE - lz, ql or eit"
+	echo
+	echo "Example:  BuildCDList lz"
+	echo "-- creates the next lz cd list --"
+	echo
+	echo "Wildcards must be wrapped in quotes."
+	echo
+	return 1;
+}
+
+WriteLog () 
+{
+	echo "  Writing new information to log file..."
+	echo
+	echo "Finished creating list for CDNUM $TYPE $CDNUM"
+	LASTFILE=`tail -1 $CDLIST`
+	echo " $LASTFILE" >> $LOG
+	echo "To:     $LASTFILE" >> $STATUSLOG
+	if [ `cat $CDLIST | grep -ic c1` -gt 0 ]
+	then
+		echo "Contains C1 data" >> $STATUSLOG
+	else
+		echo "No C1 data" >> $STATUSLOG
+	fi
+	echo -n "List Built:  " >> $STATUSLOG
+	date >> $STATUSLOG
+	CDNUM=`expr $CDNUM + 1`
+	if [ $CDNUM -lt 1000 ]; then CDNUM="0$CDNUM"; fi
+	echo -n "$CDNUM  $FIRSTFILE " >> $LOG
+	return ; 
+}
+
+if [ $# -ne 1 ]; then Usage; exit 1; fi
+
+case $1 in
+	ql|lz|eit)	TYPE=$1
+			LOG=$CDLGS/$TYPE.log
+			DATA=`jget $TYPE.DATA`
+			CAMS=`jget $TYPE.CAMS`
+			DELIM=`jget $TYPE.DELIM`		;;
+	*)		echo; echo "ERROR: Invalid CD type."; echo
+			Usage
+			exit 1					;;
+esac
+
+#
+#	Set default values, perhaps add complex set in case $LOG doesn't exist
+#
+
+
+CDMAX=`jget CDMAX`
+CDNUM=`tail -1 $LOG | gawk '{print $1}'`
+DATE=`tail -1 $LOG | gawk '{print $2}' | gawk -F/ '{print $1}'`
+CAM=`tail -1 $LOG | gawk '{print $2}' | gawk -F/ '{print $2}'`
+FILE=`tail -1 $LOG | gawk '{print $2}' | gawk -F/ '{print $3}'`
+CDLIST=$CDLTS/$TYPE.$CDNUM.list
+echo "$TYPE 05 $CDNUM Status Log" > $STATUSLOG
+echo "From:   $DATE/$CAM/$FILE" >> $STATUSLOG
+cd $DATA
+
+#
+#	Finish last date
+#
+echo
+echo "  Creating file list for $TYPE CD $CDNUM..."
+echo "  Finishing last date : $DATE ..."
+NUM=`/bin/ls -l $DATE/$CAMS/*fts | grep -ns $FILE | gawk -F: '{print $1}'`
+SIZE=`/bin/ls -l $DATE/$CAMS/*fts | tail +$NUM | gawk '{S+=$5} END {print S}'`; SIZE=${SIZE:-0}
+TEMP1=`/bin/ls -l $DATE/$CAMS/*jpg | tail +$NUM | gawk '{S+=$5} END {print S}'`; TEMP1=${TEMP1:-0}
+TEMP2=`/bin/ls -l $DATE/$CAMS/img_hdr.txt | gawk '{S+=$5} END {print S}'`; TEMP2=${TEMP2:-0}
+SIZE=`expr $SIZE + $TEMP1 + $TEMP2`
+/bin/ls -l $DATE/$CAMS/*fts | tail +$NUM | gawk '{print $9}' | gawk -F. '{print $1}' > $CDLIST
+
+#	account for extra files added to an lz cd
+if [ $TYPE = "lz" ]; then SIZE=`expr $SIZE + 10000000`; fi
+
+#
+#	Locate next date to include (may be probs if run out of dates)
+#
+echo "  Searching for next dates to include..."
+NUM=`/bin/ls -1d * | grep -ns $DATE | gawk -F: '{print $1}' | head -1`
+NUM=`expr $NUM + 1`
+
+#	Add as many full dates as possible
+for NEXTDATE in `/bin/ls -1d [0-8]* | tail +$NUM`
+do
+	TEMP=`/bin/du -k $NEXTDATE/$CAMS | gawk '{S+=$1} END {print S}'`
+	SIZE=`expr $SIZE + ${TEMP:-0} \* 1024`
+	if [ $SIZE -lt $CDMAX ]
+	then
+		echo "  Adding $NEXTDATE to cd list..."
+		/bin/ls -1 $NEXTDATE/$CAMS/*fts | gawk -F. '{print $1}' >> $CDLIST
+	else
+		SIZE=`expr $SIZE - $TEMP \* 1024`
+		LASTDATE=$NEXTDATE
+		break
+	fi
+done
+FIRSTFILE=`/bin/ls -1 $LASTDATE/$CAMS/*fts | head -1 | gawk -F. '{print $1}'`
+if [ $DELIM = "DATE" ];	then WriteLog; exit; fi	#	Clean Exit
+
+#	Add as many full cams as possible
+for NEXTCAM in `/bin/ls -1d $LASTDATE/$CAMS`
+do
+	TEMP=`/bin/du -k $NEXTCAM | gawk '{print $1}'`
+	SIZE=`expr $SIZE + $TEMP \* 1024`
+	if [ $SIZE -lt $CDMAX ]
+	then
+		echo "  Adding $NEXTCAM to cd list..."
+		/bin/ls -1 $NEXTCAM/*fts | gawk -F. '{print $1}' >> $CDLIST
+	else
+		SIZE=`expr $SIZE - $TEMP \* 1024`
+		LASTCAM=$NEXTCAM
+		break
+	fi
+done	
+FIRSTFILE=`/bin/ls -1 $LASTCAM/*fts | head -1 | gawk -F. '{print $1}'`
+if [ $DELIM = "CAM" ]; then WriteLog; exit; fi	#	Clean Exit
+
+#	Add as many days as possible
+SIZE=`expr $SIZE + 20000`	#	img_hdr.txt size
+for NEXTFILE in `/bin/ls -1 $LASTCAM/*fts`
+do
+	TEMP=`/bin/ls -l $NEXTFILE | gawk '{print $5}'`
+	SIZE=`expr $SIZE + $TEMP`
+	if [ $SIZE -lt $CDMAX ]
+	then
+		echo "  Adding $NEXTFILE to cd list..."
+		echo $NEXTFILE | gawk -F. '{print $1}' >> $CDLIST
+	else	
+		FIRSTFILE=`echo $NEXTFILE |  gawk -F. '{print $1}'`
+		break
+	fi
+done
+if [ $DELIM = "FILE" ]; then WriteLog; exit; fi	#	Clean Exit
+
+#	Should never get to this point.
+#	If it does then bail.
+echo "Encountered end of program incorrectly."
+Usage
+exit 1
+
+#
+#	end script BuildCDList
+#

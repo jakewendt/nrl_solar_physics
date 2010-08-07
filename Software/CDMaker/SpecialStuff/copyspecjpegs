@@ -1,0 +1,70 @@
+#! /bin/sh
+#
+#
+#	begin script copy_jpegs
+#
+#
+
+
+CDNUM=$2
+
+case $1 in
+        lz)     if [ -d /juke/lz_05/$CDNUM ]
+                then
+                        echo "CD located."
+			cd /juke/lz_05/$CDNUM
+                else
+                        echo "Unable to located specified CD."
+                        exit 1
+                fi
+                ;;
+        ql)     if [ -d /juke/ql_05/$CDNUM ]
+                then
+                        echo "CD located."
+			cd /juke/ql_05/$CDNUM
+                else
+                        echo "Unable to located specified CD."
+                        exit 1
+                fi
+                ;;
+        eit)    if [ -d /juke/lz_eit/$CDNUM ]
+                then
+                        echo "CD located."
+			cd /juke/lz_eit/$CDNUM
+                else
+                        echo "Unable to located specified CD."
+                        exit 1
+                fi
+                ;;
+	*)	echo
+                echo "Invalid CD type. (ql,eit or lz only)"
+                echo
+                exit 1
+		;;
+esac
+
+pwd
+
+for ftsfile in `ls -1 */*/*/*.jpg`
+do
+	echo -n "Copying $ftsfile ... "
+	if `cp $ftsfile $trash`
+	then
+		echo -n "Copied ... "
+	else
+		echo
+		echo
+		echo "ERROR copying $ftsfile."
+		echo
+		read pause
+	fi
+	echo -n "Removing ... "
+	ftsfile=`echo $ftsfile | awk -F/ '{print $NF}'`
+	chmod u+w $trash/$ftsfile
+	/bin/rm $trash/$ftsfile
+	echo "Removed."
+done
+
+#
+#	end script copy_jpegs
+#

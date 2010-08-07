@@ -1,0 +1,97 @@
+
+	ONGOING TASKS AND RESPONSIBILITIES
+
+	-	Realtime processing
+	-	Daily Quicklook processing
+	-	SO processing
+	-	LZ/EIT processing
+	-	CD Creation
+	-	CD Distribution
+	-	processing cleanup (reduce_log, raw, leb_img, tmfiles, ...)
+	-	monthly task (burn cd of secchic:/space/cvscm)
+	- 	move lz data off of jukeboxes (working)
+	-	copy data to SEAL (working) (done upto 030623)
+	-	copy data to NASs (working) (done upto 030228)
+	-	rsync home directory data
+	-	rsync Maxtor NAS'
+
+	-	Stream software	(waiting for Cook's help)
+	-	STEREO web page	(working with Cook)
+	- 	SHARPP web site 	(working)
+	-	majordomo modifications
+	-	remove email addresses from web pages????
+	-	Update Documentation 
+		-	Add $HOME/MakeCalRocCDs
+		-	Add secchic:/space/MakeCVSCM-CD 
+		-	Add safest way to stop reduce_main
+		-	Add majordomo and mail list form stuff to Documentation
+			must run $CGI-BIN/maildir/make-_insert_list_name_ to update form data
+		-	Add misclz and miscql to Documentation
+		-	Add rsync backup procedures??
+		-	Add Web Page Management
+		-	Add PC Usage and Data Locations on Urania
+			C:\LASC0-CD
+			C:\LASC0-CD\CD NTPs	(CD Templates)
+			C:\LASC0-CD\PSP (PSP CD Templates)
+		-	continue editting this Documentation book
+			-	ADD urania ftp user and password
+			-	ADD rt user and passwords and passphrase
+			-	ADD sunshow user and password
+			-	ADD sohoftp user and password
+			-	ADD soc user and password
+			-	ADD seal user and password
+			-	ADD secchic login and password (root here may be a problem)
+
+			-	FROM DENNIS
+				-	add some overview (eg inputs to the LZ processing and desired outputs)
+						(database SQL, FITS files, summary logs)
+				-	how do I debug a problem with processing?
+					-	an FAQ or debugging flowchart would help
+					This seemingly would take much more than a page or so
+			-	system recovery tips (troubleshooting tips, FAQ)
+				what happens if ...
+					corona goes down?
+					rtmovies stop?
+					...
+
+
+	OTHER TASKS
+
+	-	adjust all routines that create GIFs and such to rotate based on CROTA1
+		rt_carrmap, make_daily_mvi_all, rtmvi, MovieMachineCode
+		Most of this is done
+		
+
+
+	-	modify majordomo lists and remove "strip" keyword to allow for actual names in lists
+			will need actual names before can really do this
+	-	spaceweather email form
+
+	-	EIT CalRoc
+
+	-	Stereo images/movies
+	-	Gridware (maybe not now, but who knows)
+	-	Linux firewall for NASs
+	-	majordomo lists on solar (also would need listname@nrl.navy.mil)
+	-	umask ???????
+	-	reduce group
+
+	-	STEREO animation
+
+	-	make MPEGs from within IDL (need to wait for 5.5 install and prefer GIF license)
+	-	STEREO images
+	-	STEREO movies
+	-	WLISTER.PRO project (working)
+			Mike A. has requested a change to wlister.pro that I think
+			would be a good project for you, if you have time. He would
+			like to see a new button on the main GUI for wlister.pro
+			which automatically sorts and runs a query to return the
+			"normal" image type for the selected dates. This means the
+			following:
+			C1: undefined
+			C2: orange (filter), clear (polarizer), 1024x1024
+			C3: clear, clear, 1024x1024
+			EIT: (any), 195A, 1024x1024 or 512x512
+			Again, it's not a high priority, but would be nice.
+				-nathan--
+

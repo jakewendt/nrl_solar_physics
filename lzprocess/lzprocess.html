@@ -1,0 +1,97 @@
+<html>
+<head>
+<title>LZ Processing</title>
+</head>
+<body>
+
+<table width="100%" height="100%" >
+<tr><td VALIGN="TOP">
+<h3 align="CENTER">LZ Processing</h3>
+<p>
+<ul>
+	<li><a href="lzstatus" target="main_frame">Current LZ Status</a>
+	<li><a href="lz_disk_init3.pro" target="main_frame">LZ Disk Init</a>
+	<li><a href="lz_start_date3.pro" target="main_frame">LZ Start Date</a>
+	<li><a href="make_index.pro" target="main_frame">Make LZ Index File</a>
+	<li><a href="preplz" target="main_frame">Prep LZ Data</a>
+</ul>
+
+<p>Maintain the lzstatus file.
+
+<p>Prepare and index of QL REL and QKL files for filling in any gaps
+in the LZ files.  This MUST be done.  If it is not done to cover the
+time frame being reduced, unpack_lz_science will crash.
+	<ul>
+		<li>idl
+		<ul>
+			<li>make_index, findfile('/net/corona/ql/ECS/ELASCL......')
+			<ul>
+				<li>;	make index of existing ql data files
+				<li>;	a few of these files may need cat'd together
+				<li>;	in order to cover the desire time frame
+			</ul>
+			<li>exit
+		</ul>
+
+		<li>mv index.txt /net/corona/ql/index.txt
+	</ul>
+
+<p>Extract data from LZ CDROMs
+	<ul>
+		<li>source lz.env				;	sources environment variables
+		<li>idl
+		<ul>
+			<li>lz_disk_init3
+				<ul><li>- Copies housekeeping and data files from CDs</ul>
+			<li>exit
+		</ul>
+	</ul>
+
+<p>Convert d01 files into IMG files
+	<ul>
+		<li>preplz
+		<ul>
+			<li>(idl> unpack_lz_science)     ;unpacks lz data files and
+			<li>(idl> miss_pckts, 'yymmdd')  ;runs miss_pckts
+			<li>After this is run, both the original and the new D01 files should be cataloged and destroyed.
+		</ul>
+	</ul>
+<p>Begin data reduction process
+	<ul>
+		<li>idl
+		<ul>
+			<li>cat_img, 'yymmdd'	;-- may be just 'yymm' or something
+				<ul><li>- merges partial imgs and moves heads and tails out</ul>
+			<li>reduce_main, 2
+				<ul><li>- Reduce_main moves the IMG files into the RAW directory.  These will need to be dealt with (cataloged and deleted).</ul>
+			<li>reduce_daily, 'yymmdd', 'yymmdd', /lz
+		</ul>
+		<li>cd $MONTHLY_IMAGES
+		<li>ll 2m_orcl_01* | tail
+		<li>ll 3m_clcl_01* | tail
+		<li>idl
+		<ul>
+			<li>(starting date should be the date of an existing
+			<li>	file from before just processed lz data)
+			<li>make_all_months, 'c2', 'yymmdd', 'yymmdd'
+			<li>make_all_months, 'c3', 'yymmdd', 'yymmdd'
+		</ul>
+		<li>idl
+		<ul>
+			<li>make_daily_mvi_all, 'yymmdd', 'yymmdd', /lz, /do_mpg
+			<li>make_diff_mpeg, 'yymmdd', 'yymmdd'
+		</ul>
+	</ul>
+
+<p>LZ data cleanup :
+	<ul>
+		<li>REDUCE_LOG directories (compile in directories, tar and gzip after 1 month)
+		<li>RAW directory (catalog in Contents and Sizes files and delete)
+		<li>LEB_IMG directory (general cleanup)
+	</ul>
+
+</td></tr>
+</table>
+</body>
+</html>
+

@@ -1,0 +1,393 @@
+<HTML>
+<HEAD>
+<TITLE>LASCO Movie Maker</TITLE>
+</HEAD>
+<BODY TEXT="#000000" BGCOLOR="#FFFFFF" LINK="#0000ff" VLINK="#8800AB">
+<center>
+<b>
+<font size=8>LASCO Movie Maker</font>
+</b>
+</center>
+<hr>
+<br>
+<FORM METHOD="POST" ACTION="/cgi-bin/MovieTool/make_images.sh">
+<ol>
+<li> Select Start and Stop times - all times are  
+<em>Universal Time</em>
+<li> Optionally SELECT cadence and output format [movie type, colors, frame size, etc.]
+<li> Push <em><INPUT TYPE="submit" VALUE="MAKE MOVIE">
+</em> when ready
+         or 
+<em><INPUT TYPE="reset" VALUE="Reset">
+</em> to clear entries</b>
+<P>
+</ol>
+<em>Large</em> movie requests are queued and run offline. Large requests  
+include movies with more than 20 frames or frame size greater than 300x300.  
+If your request falls into that category and you include an email address, the 
+program will send you the <em>URL</em> when the movie has completed. <em>Due to limitations in system resources and 
+internet bandwidth, we currently restrict movies to <b>100</b> frames
+- larger requests are truncated to this limit</em><p>
+<br><input type="text" NAME="email" size=34></textarea> 
+email address for large job notification<p>
+
+<p>
+Desired Data Set
+<SELECT NAME="imgtype">
+<OPTION SELECTED> SXT X-Rays : [ Available 01-January-1992 <em>to</em> 1-December-2001 
+<OPTION> SXT White Light : [ Available 05-January-1992 <em>to</em> 13-November-1992 ]
+</SELECT></p>
+
+<p>
+Start
+Time:
+<SELECT NAME="start_hour">
+<OPTION> 00
+<OPTION> 01
+<OPTION> 02
+<OPTION> 03
+<OPTION> 04
+<OPTION> 05
+<OPTION> 06
+<OPTION> 07
+<OPTION> 08
+<OPTION> 09
+<OPTION> 10
+<OPTION> 11
+<OPTION SELECTED> 12
+<OPTION> 13
+<OPTION> 14
+<OPTION> 15
+<OPTION> 16
+<OPTION> 17
+<OPTION> 18
+<OPTION> 19
+<OPTION> 20
+<OPTION> 21
+<OPTION> 22
+<OPTION> 23
+</SELECT>
+<b>:</b>
+
+
+<SELECT NAME="start_min">
+<OPTION> 00
+<OPTION> 10
+<OPTION> 20
+<OPTION> 30
+<OPTION> 40
+<OPTION> 50
+</SELECT>
+
+
+Date:
+<SELECT NAME="start_day">
+<OPTION>  1
+<OPTION>  2
+<OPTION>  3
+<OPTION>  4
+<OPTION SELECTED>  5
+<OPTION>  6
+<OPTION>  7
+<OPTION>  8
+<OPTION>  9
+<OPTION> 10
+<OPTION> 11
+<OPTION> 12
+<OPTION> 13
+<OPTION> 14
+<OPTION> 15
+<OPTION> 16
+<OPTION> 17
+<OPTION> 18
+<OPTION> 19
+<OPTION> 20
+<OPTION> 21
+<OPTION> 22
+<OPTION> 23
+<OPTION> 24
+<OPTION> 25
+<OPTION> 26
+<OPTION> 27
+<OPTION> 28
+<OPTION> 29
+<OPTION> 30
+<OPTION> 31
+</SELECT>
+
+
+<SELECT NAME="start_month">
+<OPTION> Jan
+<OPTION SELECTED> Feb
+<OPTION> Mar
+<OPTION> Apr
+<OPTION> May
+<OPTION> Jun
+<OPTION> Jul
+<OPTION> Aug
+<OPTION> Sep
+<OPTION> Oct
+<OPTION> Nov
+<OPTION> Dec
+</SELECT>
+
+
+<SELECT NAME="start_year">
+<OPTION> 1995
+<OPTION> 1996
+<OPTION> 1997
+<OPTION> 1998
+<OPTION> 1999
+<OPTION SELECTED> 2000
+<OPTION> 2001
+<OPTION> 2002
+<OPTION> 2003
+</SELECT>
+
+
+<p>Stop
+Time:
+<SELECT NAME="stop_hour">
+<OPTION> 00
+<OPTION> 01
+<OPTION> 02
+<OPTION> 03
+<OPTION> 04
+<OPTION> 05
+<OPTION> 06
+<OPTION> 07
+<OPTION> 08
+<OPTION> 09
+<OPTION> 10
+<OPTION> 11
+<OPTION SELECTED> 12
+<OPTION> 13
+<OPTION> 14
+<OPTION> 15
+<OPTION> 16
+<OPTION> 17
+<OPTION> 18
+<OPTION> 19
+<OPTION> 20
+<OPTION> 21
+<OPTION> 22
+<OPTION> 23
+</SELECT>
+
+
+<b>:</b>
+<SELECT NAME="stop_min">
+<OPTION> 00
+<OPTION> 10
+<OPTION> 20
+<OPTION> 30
+<OPTION> 40
+<OPTION> 50
+</SELECT>
+
+
+Date:
+<SELECT NAME="stop_day">
+<OPTION>  1
+<OPTION>  2
+<OPTION>  3
+<OPTION>  4
+<OPTION>  5
+<OPTION SELECTED>  6
+<OPTION>  7
+<OPTION>  8
+<OPTION>  9
+<OPTION> 10
+<OPTION> 11
+<OPTION> 12
+<OPTION> 13
+<OPTION> 14
+<OPTION> 15
+<OPTION> 16
+<OPTION> 17
+<OPTION> 18
+<OPTION> 19
+<OPTION> 20
+<OPTION> 21
+<OPTION> 22
+<OPTION> 23
+<OPTION> 24
+<OPTION> 25
+<OPTION> 26
+<OPTION> 27
+<OPTION> 28
+<OPTION> 29
+<OPTION> 30
+<OPTION> 31
+</SELECT>
+
+
+<SELECT NAME="stop_month">
+<OPTION> Jan
+<OPTION SELECTED> Feb
+<OPTION> Mar
+<OPTION> Apr
+<OPTION> May
+<OPTION> Jun
+<OPTION> Jul
+<OPTION> Aug
+<OPTION> Sep
+<OPTION> Oct
+<OPTION> Nov
+<OPTION> Dec
+</SELECT>
+
+
+<SELECT NAME="stop_year">
+<OPTION> 1995
+<OPTION> 1996
+<OPTION> 1997
+<OPTION> 1998
+<OPTION> 1999
+<OPTION SELECTED> 2000
+<OPTION> 2001
+<OPTION> 2002
+<OPTION> 2003
+</SELECT>
+
+
+<p>
+Movie Frame Size size
+<SELECT NAME="outsize">
+<OPTION> 64_x_64
+<OPTION> 128_x_128
+<OPTION> 256_x_256
+<OPTION SELECTED> 512_x_512
+<OPTION> 1024_x_1024
+</SELECT>
+
+
+<p>
+Output Format
+<SELECT NAME="type">
+<OPTION> Still Sequence (GIF.tar.gz)
+<OPTION> Still Sequence (JPG.tar.gz)
+<OPTION> Still Sequence (PNG.tar.gz)
+<OPTION SELECTED> JavaScript Movie
+<OPTION> MPEG-1
+<OPTION> Animated GIF (Single Run)
+<OPTION> Animated GIF (Infinite Loop)
+</SELECT>
+
+<p>
+Camera
+<SELECT NAME="camera">
+<OPTION>C1
+<OPTION>C2
+<OPTION SELECTED>C3
+<OPTION>C4
+</SELECT>
+
+
+<p>
+Filter (Coming Soon)
+
+
+
+<p>
+Image Cadence : <SELECT NAME="cadence">
+<OPTION> All
+<OPTION>  1 hours
+<OPTION SELECTED> 2 hours
+<OPTION> 4 hours
+<OPTION> 6 hours
+<OPTION> 12 hours
+<OPTION> 18 hours
+<OPTION> 1 day
+<OPTION> 2 days
+<OPTION> 5 days 
+<OPTION> 10 days
+<OPTION> 15 days
+<OPTION> 27.21 days
+<OPTION> 30 days
+<OPTION> 60 days
+<OPTION> 90 days
+<OPTION> 180 days
+</SELECT>
+
+
+<p>
+[<input type="checkbox" NAME="labelframes" checked> Time Stamp Frames]
+<p> 
+
+Color Table
+<SELECT NAME="colortable">
+<OPTION>          00_B-W LINEAR
+<OPTION>          01_BLUE/WHITE
+<OPTION SELECTED> 03_RED TEMPERATURE
+<OPTION>          15_STERN SPECIAL
+</SELECT>
+
+
+<p>
+Contrast Factor (Won't Be Used for LASCO?)
+<SELECT NAME="gammacont">
+<!-- DO NOT USE THE NAME 'GAMMA'.  Causes symbol to be used and erases the '&' divider -->
+<OPTION> .1
+<OPTION> .2
+<OPTION> .3
+<OPTION> .4
+<OPTION> .5
+<OPTION SELECTED> .6
+<OPTION> .7
+<OPTION> .8
+<OPTION> .9
+<OPTION> 1
+<OPTION> 1.1
+<OPTION> 1.2
+<OPTION> 1.3
+</SELECT>
+
+
+<p>
+<input type="checkbox" NAME="reverse" > Reverse Colors
+<p>
+
+
+
+<!--
+<center>
+<a href="/YPOP/thumb_pallet.html"><em>Color Table Pallet with samples</em>
+<table header="test" border=1 cellpadding=0 cellspacing=0><tr align=center><td><img
+src="/YPOP/Icons/sfm512921101032_01_0.1_n.gif"></td>
+<td><img src="/YPOP/Icons/sfm512921101032_01_0.4_n.gif"></td>
+<td><img src="/YPOP/Icons/sfm512921101032_01_0.7_n.gif"></td>
+<tr align=center><td><img src="/YPOP/Icons/sfm512921101032_03_0.1_n.gif"></td>
+<td><img src="/YPOP/Icons/sfm512921101032_03_0.4_n.gif"></td>
+<td><img src="/YPOP/Icons/sfm512921101032_03_0.7_n.gif"></td>
+<tr align=center><td><img src="/YPOP/Icons/sfm512921101032_15_0.1_n.gif"></td>
+<td><img src="/YPOP/Icons/sfm512921101032_15_0.4_n.gif"></td>
+<td><img src="/YPOP/Icons/sfm512921101032_15_0.7_n.gif"></td></table>
+</center></a>
+<p>
+<hr>
+<B>Author:</B>
+<a NAME="anchor"></a>
+Samuel Freeland (freeland@sxt1.lmsal.com)
+<p>
+<IMG ALT="------------------------------------------------------------------"
+SRC="/YPOP/Images/sundiv.gif" HEIGHT=38 WIDTH=600> 
+<p>
+<table>
+<tr><td align=center valign=top>
+<A HREF="/YPOP/homepage.html">
+<b>YPOP Homepage</b>  <br>
+<img alt="YPOP ICON" src="/YPOP/Images/tcs_small.gif"></a>
+</td>
+<td align=center valign=top>
+<A HREF="http://www.lmsal.com/SXT/homepage.html">
+<b>SXT Homepage</b><br>
+<img alt="SXT ICON" src="/YPOP/Images/extended_corona_8_may_92_enhanced_red_icon.gif"><br></a>
+</td>
+</tr></table>
+-->
+
+
+</BODY>
+</HTML>
+

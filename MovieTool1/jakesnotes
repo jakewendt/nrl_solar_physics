@@ -1,0 +1,80 @@
+
+
+infinite looping MNG ???
+
+is it level_05 or level_1 or somewhere in between ?????
+
+add avi, mov, mvi output ???
+
+C1 processing
+
+finish EIT processing
+
+add text to image ( timestamp )
+
+
+
+
+
+
+
+
+
+
+create imagemedian(real median) - will have to load entire image into memory to do this
+	doesn't really seem necessary at this point
+
+
+
+
+* getbkgimg does not work for Seq PW images 
+
+* fitstopgm scales based on DATAMIN and DATAMAX keywords if they exist,
+	therefore, if they do exist they need to be correct.
+
+
+
+look into PIT (Progressive Image Transport) file type
+remove jumptoURL from MeasureImg
+change MeasureImg naming scheme
+
+
+
+starlink software hard to use (so I'm using PBMTools and others instead)
+
+XnView has a converter ( nconvert )  but doesn't output to MNGs yet
+	( www.xnview.com )
+
+
+Tools required
+	bourne shell, perl
+	pbmtools (www.acme.com/software/pbmplus)
+		bins, libs, includes
+	gawk (to deal with long strings that awk can't handle)
+	cjpeg/djpeg (to convert to/from jpegs)
+	cfitsio ( modhead, imstat, pruneimage, imagearith, constarith, tofitsbp16, fitszoom )
+		create imagemedian, imagemin, imagemax 		(look at imstat.c code)
+	whirlgif (to create animated gifs)
+	mpeg_encode
+	libpng
+	libmng
+	pngtomng.pl
+	pnmtopng
+	pngsize
+	jexpr
+
+
+
+* LASCO headers fail the fits verification therefore ...
+
+	LASCO FITS files crash during fftrec (fits_test_record)
+	which is called in ffprec (fits_write_record)
+	which is in putkey.c
+
+		#define fits_test_record    fftrec
+		#define fits_write_record       ffprec
+
+	This call must be commented out before compilation or it 
+	just won't work.
+
+

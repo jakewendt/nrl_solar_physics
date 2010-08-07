@@ -1,0 +1,63 @@
+#! /bin/sh
+#
+#
+#	begin script CreateImage
+#
+#	author:	the Jake
+#	born:	000713
+#
+#	modifications:
+#		000719 - the Jake - including jget technique
+#
+#
+#	CreateImage lz 0459
+
+Usage()
+{ 
+	echo
+	echo "Usage:  CreateImage CDTYPE CDNUM"
+	echo
+	echo "Example:  CreateImage lz 0459"
+	echo
+	return ; 
+}
+
+
+if [ -z "$CDROOT" -o -z "$bin" -o -z "$CDISOS" -o -z "$CDLTS" ]
+then
+        echo
+        echo "  All necessary environment variables are not defined."
+        echo "  Please review the script to see which need defined."
+        echo
+        exit 1
+fi
+
+if [ $# -ne 2 ]; then Usage; exit 1; fi
+
+case $1 in
+	lz|ql|eit)	TYPE=$1
+			PRE=`jget $TYPE.PRE`
+			CDID=`jget $TYPE.CDID`
+			;;
+	*)		Usage
+			exit 1
+			;;
+esac
+
+if [ -r $CDLTS/$TYPE.$2.list -a -s $CDLTS/$TYPE.$2.list ]
+then
+        CDNUM=$2
+else
+        echo "  ERROR:  List not found for $TYPE CD $2"
+        Usage
+        exit 1
+fi
+
+echo "  Creating cd image ... "
+$bin/mkisofs -o $CDISOS/$PRE$CDNUM.iso -r -v -l -T -J -V $CDID$CDNUM $CDROOT
+
+echo -n "Image Made:  " >> $STATUSLOG
+date >> $STATUSLOG
+#
+#	end script CreateImage
+#

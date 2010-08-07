@@ -1,0 +1,20 @@
+
+#ftpstatus=`printf "%b\n%b\n%s" "status" | ftp -v -T 10 soc.nascom.nasa.gov | grep "Connected"`
+#echo "-$ftpstatus-"
+
+#if [ -n "$ftpstatus" ] 
+#then 
+#	echo "ftp connected"
+#else
+#	echo "ftp not connected"
+#fi
+if [ ! -d "/net/vesta/export" ]; then exit; fi
+echo "test ok"
+if [ ! -d "$TMFILES" ]; then exit; fi
+echo "tmfiles ok"
+if [ ! -d "$MVIS" ]; then exit; fi
+echo "mvis ok"
+if [ ! -d "$IDL_DIR" ]; then exit; fi
+echo "idl_dir ok"
+
+

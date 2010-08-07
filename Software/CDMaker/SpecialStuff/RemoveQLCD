@@ -1,0 +1,64 @@
+#! /bin/sh
+#
+#
+#	begin script RemoveQLCD
+#
+#	author:	the Jake
+#	born:	000621
+#
+#	part of CDMaker
+#
+#	purpose:	used when removing a QL CD from a jukebox
+#			(not used anymore because there are no QL CDs in jukeboxes)
+#
+#	modifications:	000816 - the Jake - modified for running sort of on hercules
+#
+
+if [ $# -ne 1 ]
+then
+	echo
+	echo "Usage:  InsertCD CDTYPE CDNUM"
+	echo
+	echo "Example:  RemoveQLCD 0711"
+	echo
+	exit
+fi
+
+if [ `hostname` != "gueuze" ]; then exit; fi
+
+CDNUM=$1
+
+if [ -d /juke/ql_05/$CDNUM ]
+then
+	ls -d /juke/ql_05/$CDNUM/lasco_ql/level_05/*
+	for EACHDIR in	`ls -d1 /juke/ql_05/$CDNUM/lasco_ql/level_05/*`
+	do
+		DATE=`echo $EACHDIR | awk -F/ '{print $7}'`
+		echo "chmod u+w $QL_IMG/level_05/$DATE" >> cd.script
+		echo "/bin/rm -rf $QL_IMG/level_05/$DATE" >> cd.script
+	done
+	/usr/local/bin/sudo autojuke -vu ql_05_$CDNUM
+	SLOTNUM=`echo $CDNUM | cut -c3-4`
+	SLOTNUM=`expr $SLOTNUM + 0`	#	destroys preceding zero
+	if [ $SLOTNUM -eq 0 ]; then SLOTNUM=100; fi
+
+	echo
+	echo "Positioning CDs for export from slot $SLOTNUM..."
+	echo "Please remove $CDNUM."
+	echo
+	/usr/local/bin/sudo autojuke -X "jb0 slot $SLOTNUM"
+	echo "rmdir /juke/ql_05/$CDNUM" >> cd.suscript
+	CDDIR="ql_05"
+else
+	echo "ERROR:  QL CD $CDNUM expected and not found."
+	exit
+fi
+
+
+STATUSLOG=$CDMAKER/CDSTATUS/ql.$CDNUM.status
+/usr/ucb/echo -n "Removed:     " >> $STATUSLOG
+date >> $STATUSLOG
+
+#
+#	end script RemoveQLCD
+#

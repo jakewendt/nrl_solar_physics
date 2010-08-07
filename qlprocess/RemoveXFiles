@@ -1,0 +1,29 @@
+#! /bin/sh -a
+#
+#
+#	begin script RemoveXFiles
+#
+#	author:	the Jake
+#	born:	001027
+#
+#	*X.* files have been causing problems
+#
+#	part of FirstShift
+#
+#	purpose:	to move QKL and REL files containing an X
+#			these files continue to cause problems
+#
+echo
+echo "-- Checking for X files... "
+
+cd $TMFILES
+
+if [ ! -d "xfiles" ]; then mkdir xfiles; fi
+jmove *X.* xfiles
+
+echo "-- Done checking for X files."
+echo
+
+#
+#	end script RemoveXFiles
+#

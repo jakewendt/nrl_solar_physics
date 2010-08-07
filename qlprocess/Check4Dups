@@ -1,0 +1,49 @@
+#! /bin/sh -a
+#
+#
+#	begin script Check4Dups
+#
+#	author:	the Jake
+#	born:	000626
+#
+#
+#	000627 - the Jake - added the sort before uniq so
+#			that it actually worked.
+#
+#	part of FirstShift
+#
+#	purpose:	check for duplicate IMG files already processed
+#
+
+echo
+echo "-- Checking for redundant images from QKL files... "
+
+/bin/rm $FIRST_DIR/scripts/REDfilelist
+/bin/rm $FIRST_DIR/scripts/ALLfilelist
+
+cd $RAW
+for REDdir in `/bin/ls -1d 0* | tail -14`
+do
+        cd $RAW/$REDdir
+        /bin/ls -1d *.img >> $FIRST_DIR/scripts/ALLfilelist
+done
+
+cd $LEB_IMG
+/bin/ls -1d *.img >> $FIRST_DIR/scripts/ALLfilelist
+sort $FIRST_DIR/scripts/ALLfilelist | uniq -d > $FIRST_DIR/scripts/REDfilelist
+
+cd
+for REDfile in `cat $FIRST_DIR/scripts/REDfilelist`
+do
+        mv $LEB_IMG/$REDfile $LEB_IMG/dups
+        echo "  Moved Redundant Image : $REDfile "
+#        /usr/ucb/mail -s "Moved Redundant Image : $REDfile" $OPERATOR < /dev/null
+done
+
+
+echo "-- Done checking for redundant images from QKL files."
+echo
+
+#
+#	end script Check4Dups
+#

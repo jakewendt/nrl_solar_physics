@@ -1,0 +1,76 @@
+
+IDL[hercules]>img=lasco_readfits('/net/centaur/lz/level_05/030301/c4/42283079.fts',hdr)
+% Compiled module: LASCO_READFITS.
+% Compiled module: READFITS.
+% Compiled module: SXPAR.
+% Compiled module: GETTOK.
+% Compiled module: VALID_NUM.
+% READFITS: Now reading 1024 by 1024 array
+% Compiled module: DATATYPE.
+% Compiled module: FXPAR.
+% Compiled module: LASCO_FITSHDR2STRUCT.
+% Compiled module: TRIM.
+% Compiled module: FILEPATH.
+%%LASCO_READFITS took        3.9702860 seconds.
+IDL[hercules]>oimg=make_image_eit(img, hdr)
+% Compiled module: MAKE_IMAGE_EIT.
+% Compiled module: CONCAT_DIR.
+% Compiled module: GET_LOGENV.
+% Compiled module: OS_FAMILY.
+% Compiled module: EXIST.
+% Compiled module: TAG_EXIST.
+BOX_REF         FLOAT     =       30.0000
+% Compiled module: OFFSET_BIAS.
+% Compiled module: STRUCT2FITSHDR.
+% Compiled module: FXADDPAR.
+% Compiled module: FXPARPOS.
+% Compiled module: DETABIFY.
+% Compiled module: EIT_DEGRID.
+% Compiled module: EIT_FXPAR.
+Using NRL generated EIT header
+% Compiled module: IS_GSFCVMS.
+% Compiled module: ANYTIM2UTC.
+% Compiled module: STR_SEP.
+% Compiled module: STR2UTC.
+% Compiled module: DELVARX.
+% Compiled module: BOOST_ARRAY.
+% Compiled module: UTC2INT.
+% Compiled module: DATE2MJD.
+% Compiled module: CHECK_INT_TIME.
+% Compiled module: GET_LEAP_SEC.
+% Compiled module: GET_UTC.
+% Compiled module: FIND_WITH_DEF.
+% Compiled module: FIND_ALL_DIR.
+% Compiled module: BREAK_PATH.
+% Compiled module: EIT_FLAT.
+Using NRL generated EIT header
+% Compiled module: EIT_NORM_RESPONSE.
+% Compiled module: INT2UTC.
+% Compiled module: MJD2DATE.
+% Compiled module: UTC2STR.
+% EIT_NORM_RESPONSE: Reading in flat...
+% Compiled module: EIT_GETCAL.
+% Compiled module: EIT_FINDCALGROUP.
+% Compiled module: EIT_CALGROUPS.
+% Compiled module: UTC2SEC.
+% Compiled module: EIT_BAKEOUTS.
+% Compiled module: EIT_FIND_LAST_CAL.
+% Compiled module: EIT_FILLMISSINGBLOCKS.
+% Compiled module: EIT_VIS2EUV.
+% Compiled module: READCOL.
+% Compiled module: NUMLINES.
+% Compiled module: ZPARCHECK.
+% Compiled module: REMCHAR.
+% Compiled module: REPCHR.
+% Compiled module: STRNUMBER.
+       12.597700       0
+BOX_AVG         FLOAT     =       2.59000
+% Compiled module: MAXMIN.
+       40157.295      396.813      -16.913456
+BMIN            FLOAT     =      0.399024
+BMAX            FLOAT     =       4.39902
+       4.6037645      2.59859       0.0000000
+% Compiled module: REDUCE_STD_SIZE.
+%%Running REDUCE_STD_SIZE
+% Compiled module: RTMVIXY.
+

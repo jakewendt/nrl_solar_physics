@@ -1,0 +1,114 @@
+
+#! /bin/sh -x
+#
+#	begin script BuildMiscList
+#
+#	author:	Jake
+#	born:	030512
+#
+#	purpose:	create CD list of Misc Data
+#
+#		different enough from BuildCDList to be its own thing
+#
+
+
+Usage () 
+{
+	echo
+	echo "Usage:  BuildMiscList CDTYPE"
+	echo "CDTYPE - misclz or miscql"
+	echo
+	echo "Example:  BuildMiscList misclz"
+	echo "-- creates the next misc lz cd list --"
+	echo
+	return 1;
+}
+
+WriteLog () 
+{
+	echo "  Writing new information to log file..."
+	echo
+	echo "Finished creating list for CDNUM $TYPE $CDNUM"
+	echo " $LASTDIR" >> $LOG
+	echo "To:     $LASTDIR" >> $STATUSLOG
+	/usr/ucb/echo -n "List Built:  " >> $STATUSLOG
+	date >> $STATUSLOG
+	CDNUM=`expr $CDNUM + 1`
+	if [ $CDNUM -lt 1000 ]; then CDNUM="0$CDNUM"; fi
+	/usr/ucb/echo -n "$CDNUM  $NEWFIRSTDIR " >> $LOG
+	return ; 
+}
+
+if [ $# -ne 1 ]; then Usage; exit 1; fi
+
+
+CDLGS=$CDMAKER/CDLOGS/
+CDLTS=$CDMAKER/CDLISTS/
+CDSTATUS=$CDMAKER/CDSTATUS/
+
+
+case $1 in
+	miscql|misclz)
+		TYPE=$1
+		LOG=$CDLGS/$TYPE.log
+		DATA=`jget $TYPE.DATA`
+		;;	
+	*)
+		echo; echo "ERROR: Invalid CD type."; echo
+		Usage
+		exit 1					;;
+esac
+
+
+#
+#	Set default values, perhaps add complex set in case $LOG doesn't exist
+#
+
+CDMAX=`jget CDMAX`
+CDNUM=`tail -1 $LOG | gawk '{print $1}'`
+
+FIRSTDIR=`tail -1 $LOG | gawk '{print $2}'`
+
+CDLIST=$CDLTS/$TYPE.$CDNUM.list
+STATUSLOG=$CDSTATUS/$TYPE.$CDNUM.status
+
+echo "$TYPE 05 $CDNUM Status Log"	> $STATUSLOG
+echo "From:   $FIRSTDIR" >> $STATUSLOG
+
+cd $DATA
+
+echo
+echo "  Creating file list for $TYPE CD $CDNUM..."
+
+
+#
+#	Locate next date to include (may be probs if run out of dates)
+#
+echo "  Searching for next dates to include..."
+/bin/ls -1d [cdl]*/*/9* | sort -t / -k 3 > $CDMAKER/misclz.list
+/bin/ls -1d [cdl]*/*/0* | sort -t / -k 3 >> $CDMAKER/misclz.list
+SIZE=`/bin/du -sk $FIRSTDIR | gawk '{print $1}'`; SIZE=${SIZE:-0}
+NUM=`cat $CDMAKER/misclz.list | grep -ns $FIRSTDIR | gawk -F: '{print $1}' | head -1`
+
+for NEXTDIR in `cat $CDMAKER/misclz.list | tail +$NUM`
+do
+	TEMP=`/bin/du -sk $NEXTDIR | gawk '{print $1}'`
+	SIZE=`expr $SIZE + ${TEMP:-0} \* 1024`
+	if [ $SIZE -lt $CDMAX ]
+	then
+		echo "  Adding $NEXTDIR to cd list..."
+		echo $NEXTDIR >> $CDLIST
+		LASTDIR=$NEXTDIR
+	else
+		NEWFIRSTDIR=$NEXTDIR
+		SIZE=`expr $SIZE - $TEMP \* 1024`
+		break
+	fi
+done
+
+WriteLog		#	Clean Exit
+ 
+#
+#	end script BuildMiscList
+#
+

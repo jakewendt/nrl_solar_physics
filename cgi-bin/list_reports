@@ -1,0 +1,27 @@
+#!/bin/sh
+
+
+echo Content-type: text/html
+echo
+
+cat << EOF
+<HTML>
+
+<h3>This is a listing of my monthly reports.</h3>
+<pre>
+
+
+</pre>
+<ul>
+EOF
+
+
+cd /home/reduce/public_html/Reports
+/bin/ls -1rd *rpt | /usr/bin/awk '{print "<li><a href=\"/~reduce/Reports/"$0"\">"$0"</a><br>"}'
+
+cat << EOF
+</ul>
+</HTML>
+
+EOF
+

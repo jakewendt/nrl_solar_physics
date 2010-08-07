@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>Daily Routine</title>
+</head>
+<body>
+
+<table width="100%" height="100%" >
+<tr><td VALIGN="TOP">
+<h3 align="CENTER">Data Map</h3>
+
+<p>
+<ul>
+	<li>DAILY
+	<ul>
+		<li>Verify Morning Script is Running / has Run
+		<ul>
+			<li>complete by hand if necessary
+			<li>correct any possible errors
+		</ul>
+	
+		<li>Get new SOLZ data
+
+
+		<li>Make Special Request CDs
+
+
+		<li>Check disk space on all used network drives
+		<ul>
+			<li>QL Cleanup (reduce_log, raw, level_05)
+			<li>LZ Cleanup (reduce_log, raw)
+		</ul>
+
+
+		<li>Make SOLZ CDs
+
+		<li>Process SOLZ CDs
+
+		<ul>
+			<li>	Generate LZ Data d01 files and img files (unpack_lz_science)
+			<li>	Generate LZ Data FITS files (reduce_main)
+			<li>	rsync2seal
+			<li>	when convenient, move data off of centaur onto another NAS
+			<li>	(reduce_daily)
+			<li>	(make_all_months)
+			<li>	(make_daily_mvi_all) remove or replace old QL movies
+			<li>	(make_diff_mpeg)
+		</ul>
+	
+
+		<li>Make QL/LZ/EIT CDs
+
+		<li>Verify QL/LZ/EIT CDs
+
+		<li>Box and Ship QL/LZ/EIT CDs
+
+		<li>RsyncData
+
+	</ul>	
+	<li>WEEKLY
+	<ul>
+		<li>make_all_months, 'c[23]', date, date  (I do after each LZ Processing session)
+		<li>RsyncAllData
+	</ul>
+
+	<li>MONTHLY
+	<ul>
+		<li>make cd of /net/secchic/space/cvscm
+		<li>
+	</ul>
+
+
+</ul>
+
+<ul>
+	<li><a href="MyToDoList" target="main_frame">My To-Do List</a>
+	<li><a href="tcshrc" target="main_frame">tcshrc</a>
+	<li><a href="datamap.html" target="main_frame">Data Map</a>
+	<li><a href="environ.html" target="main_frame">Environment Variables</a>
+</ul>
+</td></tr>
+</table>
+</body>
+</html>
+
+

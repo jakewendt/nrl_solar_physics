@@ -1,0 +1,37 @@
+
+<br>
+<br>
+Select images to make movie from this list<br>
+<FORM ACTION=/cgi-bin/MovieTool/makemovie.pl METHOD=POST>
+<INPUT TYPE=Submit Value=Submit>
+<INPUT TYPE=Reset Value=Reset>
+<br>
+
+<p><b>Movie Frame Size</b>
+<SELECT NAME="outsize">
+        <OPTION VALUE="128"> 128 x 128
+        <OPTION VALUE="256"> 256 x 256
+        <OPTION VALUE="512" SELECTED> 512 x 512
+        <OPTION VALUE="1024"> 1024 x 1024
+</SELECT>
+
+
+
+<p><b>Output Format</b>
+<SELECT NAME="outtype">
+	<OPTION VALUE="JS" SELECTED> JavaScript Movie
+	<OPTION VALUE="MPG1"> MPEG-1
+	<OPTION VALUE="GIF"> Series of GIFs
+	<OPTION VALUE="AGIF"> Animated GIF (Single Run)
+	<OPTION VALUE="AGIFL"> Animated GIF (Infinite Loop)
+	<OPTION VALUE="PNG"> Series of PNGs
+	<OPTION VALUE="MNG"> Animated PNGs (MNG - 10 loops)
+	<OPTION VALUE="JPG"> Series of JPGs
+</SELECT>
+<BR>
+<BR>
+
+DateProcessed.TimeProcessed.PID/DateTaken_TimeTaken_Camera.gif<BR>
+<BR>
+
+

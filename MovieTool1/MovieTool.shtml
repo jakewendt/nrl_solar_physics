@@ -1,0 +1,43 @@
+
+<HTML>
+<HEAD>
+<TITLE>
+LASCO Movie Machine
+</TITLE>
+
+<!--#include file="./MovieTool.source/body1" -->
+
+
+<H3>
+<p>The LASCO Movie Machine allows the user to reduce images selected from the database
+and convert them to gifs, mpegs, jpegs, pngs, mngs, etc. for viewing.
+Some of these products can be viewed online as Java and Javascript movies.
+These images and products are maintained for 30 days and then deleted.
+<p>The user can also select and view images that have been recently reduced 
+by them or other users.
+<p>This is still under construction and may still have bugs.
+<p>Feel free to place any comments or questions in the comments field on the page where it is available
+or send them to 
+
+<a href="mailto:&#119;&#101;&#98;&#109;&#97;&#115;&#116;&#101;&#114;&#64;
+&#108;&#111;&#117;&#105;&#115;14.&#110;&#114&#108;.&#110;&#97;&#118;&#121;
+.&#109;&#105;&#108;">the webmaster.</a>
+
+
+<br>
+<br>
+<center>
+<a href="http://lasco-www.nrl.navy.mil/cgi-bin/lwdb/lasco/images/form">Select new images from the database.</a>
+<br>
+<br>
+or
+<br>
+<br>
+<a href="http://lasco-www.nrl.navy.mil/cgi-bin/MovieTool/exist.pl">Select from recently reduced images. (last 30 days)</a>
+</center>
+<br>
+<br>
+</H3>
+
+<!--#include file="./MovieTool.source/footer" -->
+

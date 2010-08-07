@@ -1,0 +1,183 @@
+
+<html>
+<head>
+<title>Data Map</title>
+</head>
+<body>
+
+<table width="100%" height="100%" >
+<tr><td VALIGN="TOP">
+<h3 align="CENTER">Data Map</h3>
+
+<p>
+<p>/net/corona/	(data links)
+	<ul>
+		<li>ql (about 200 days)
+			<ul>
+				<li>main ( /net/minotaur )
+				<li>backup ( /net/centaur ) [disabled on MaxAttach Server]
+			</ul>
+		<li>lz
+			<ul>
+				<li>main ( /net/centaur )
+				<ul>
+					<li>level_05/951208 to level_05/971219 (/net/gaelic/lz1)
+					<li>level_05/971220 to level_05/990531 (/net/gaelic/lz2)
+					<li>level_05/990601 to level_05/000526 (/net/omicron/lz3)
+					<li>level_05/000527 to level_05/010525 (/net/omicron/lz4)
+					<li>level_05/010526 to level_05/020425 (/net/theta/lz5)
+					<li>level_05/020426 to level_05/020831 (/net/theta/lz6)
+				</ul>
+
+				<li>backup ( /net/hera ) [disabled on MaxAttach Server]
+			</ul>
+		<li>mvi
+			<ul>
+				<li>main ( /net/hera )
+				<li>backup ( /net/xi ) [disabled on MaxAttach Server]
+			</ul>
+		<li>pub
+			<ul>
+				<li>main ( /net/xi )
+				<li>backup ( /net/alpha ) [disabled on MaxAttach Server]
+			</ul>
+		<li>dat2/CMES
+			<ul>
+				<li>main ( /net/alpha )
+				<li>backup ( /net/beta ) [disabled on MaxAttach Server]
+			</ul>
+		<li>dat1/CMES
+			<ul>
+				<li>main ( /net/beta )
+				<li>backup ( /net/minotaur ) [disabled on MaxAttach Server]
+			</ul>
+
+
+		<li>lasco
+			<ul>
+				<li>carr_maps -> /net/solardata/sd6/carr_maps
+				<li>CMES -> /net/beta/dat1/CMES
+				<li>debris -> /net/solardata/sd6/debris
+				<li>ew_carr_maps -> /net/solardata/sd5/ew_carr_maps
+				<li>exp_factor -> /net/solardata/sd5/exp_factor
+				<li>monthly -> /net/solardata/sd5/monthly
+				<li>polarize -> /net/solardata/sd6/polarize
+				<li>reduce_log -> /net/solardata/sd6/reduce_log
+			</ul>
+
+
+	</ul>
+
+<br>
+
+<pre>
+ll /net/centaur/lz
+lrwxrwxrwx   1 root     root          25 Mar 25 15:36 12_num -> /net/gorgon/gg2/lz/12_num
+lrwxrwxrwx   1 root     root          25 Mar 25 15:36 22_num -> /net/gorgon/gg2/lz/22_num
+lrwxrwxrwx   1 root     root          25 Mar 25 15:36 32_num -> /net/gorgon/gg2/lz/32_num
+lrwxrwxrwx   1 root     root          25 Mar 25 15:36 42_num -> /net/gorgon/gg2/lz/42_num
+-rwxr--r--   1 reduce   staff        278 Mar 25 13:27 backuplzroot
+lrwxrwxrwx   1 root     root          27 Mar 25 15:04 catalogs -> /net/gorgon/gg2/lz/catalogs
+lrwxrwxrwx   1 root     root          34 Mar 26 07:30 finishedtmfiles -> /net/gorgon/gg2/lz/finishedtmfiles
+lrwxrwxrwx   1 root     root          30 Mar 25 15:36 img_hdr.txt -> /net/gorgon/gg2/lz/img_hdr.txt
+drwxr-xr-x   5 reduce   staff       1024 May  2 07:12 jake
+dr-xr-xr-x 1219 reduce   staff      21504 May  6 12:40 jukeboxes.level_05
+lrwxrwxrwx   1 root     root          22 Mar 25 15:25 leb -> /net/gorgon/gg2/lz/leb
+lrwxrwxrwx   1 root     root          26 Mar 25 15:45 leb_img -> /net/gorgon/gg2/lz/leb_img
+drwxrwxr-x 906 reduce   staff      61952 Jun  6 21:03 level_05
+lrwxrwxrwx   1 reduce   root          31 Oct 13  2001 level_1 -> /net/corona/corona01/lz/level_1
+-rw-r--r--   1 reduce   staff         54 May  6 17:53 maildummy
+lrwxrwxrwx   1 root     root          23 Mar 25 15:25 misc -> /net/gorgon/gg2/lz/misc
+lrwxrwxrwx   1 root     root          15 Apr 12 09:38 mvi -> /net/corona/mvi
+lrwxrwxrwx   1 root     root          26 Jan 29 07:27 polarize -> /net/corona/lasco/polarize
+lrwxrwxrwx   1 root     root          22 Mar 26 07:10 raw -> /net/gorgon/gg2/lz/raw
+lrwxrwxrwx   1 root     root          29 Mar 25 15:45 reduce_log -> /net/gorgon/gg2/lz/reduce_log
+lrwxrwxrwx   1 root     root          26 Mar 26 07:30 tmfiles -> /net/gorgon/gg2/lz/tmfiles
+lrwxrwxrwx   1 root     root          24 Mar 26 07:30 tmout -> /net/gorgon/gg2/lz/tmout
+lrwxrwxrwx   1 root     root          29 Mar 25 15:36 weekly.dat -> /net/gorgon/gg2/lz/weekly.dat
+
+
+
+ll /net/minotaur/ql
+-rw-r--r--   1 reduce   staff         13 Jun 15 08:13 11_num
+-rw-r--r--   1 reduce   staff         13 Jun 16 09:25 21_num
+-rw-r--r--   1 reduce   staff          9 May  8  1998 30_num
+-rw-r--r--   1 reduce   staff         13 Jun 16 09:25 31_num
+-rw-r--r--   1 reduce   staff          9 May  8  1998 37_num
+-rw-r--r--   1 reduce   staff          9 May  8  1998 3t_num
+-rw-r--r--   1 reduce   staff         13 Feb  2  1999 40_num
+-rw-r--r--   1 reduce   staff         13 Jun 16 09:14 41_num
+-rw-r--r--   1 reduce   staff          9 May  8  1998 47_num
+drwxr-xr-x   4 reduce   staff        512 Sep  2  1997 catalogs
+drwxr-xr-x   3 reduce   staff     141312 Jun 14 11:46 ECS
+drwxr-xr-x   2 reduce   staff       2048 Jun 16 08:04 ECS_YEST
+-rw-rw-r--   1 reduce   staff    68920182 Jun 16 09:25 img_hdr.txt
+-rw-r--r--   1 reduce   staff     191268 Jun 14 12:07 index.txt
+drwxr-xr-x   4 reduce   staff        512 Apr 12  1996 leb
+drwxr-xr-x  12 reduce   staff      32256 Jun 16 09:25 leb_img
+drwxrwxr-x 262 reduce   staff       4608 Jun 16 08:36 level_05
+-rw-r--r--   1 reduce   staff         54 Jun 16 08:35 maildummy
+drwxrwxr-x  10 reduce   staff        512 Feb  1  2001 misc
+drwxr-xr-x   3 reduce   staff        512 Feb  4 12:14 old_stuff
+lrwxrwxrwx   1 root     root          26 Oct 24  2001 polarize -> /net/corona/lasco/polarize
+-r--r--r--   1 reduce   staff      95985 Jan 29 07:52 QL_ECS.contents.2000.gz
+-r--r--r--   1 reduce   staff     140660 Mar  8 13:43 QL_ECS.contents.2001.gz
+-rw-r--r--   1 reduce   staff     351979 May  1 14:49 QL_ECS.contents.2002
+drwxr-xr-x  80 reduce   staff       2048 Jun 16 08:35 raw
+drwxr-xr-x   6 reduce   staff       5120 Jun 16 08:30 reduce_log
+drwxr-xr-x   3 reduce   staff       2048 Jun 16 08:31 tmfiles
+-rw-r--r--   1 reduce   staff       4396 Jun 17 08:28 weekly.dat
+
+
+ll /net/corona
+-rw-r--r--   1 root     other         11 Feb  6  2001 awk
+lrwxrwxrwx   1 root     root           9 Dec 20  1999 bin -> ./usr/bin
+drwxr-xr-x   6 root     nobody       512 Dec  6  2000 cdrom
+drwxr-xr-x   3 root     other        512 Oct 17  2001 corona01
+lrwxrwxrwx   1 root     other         24 Jan  5  2000 cplex1 -> /net/corona/data2/cplex1
+lrwxrwxrwx   1 root     other         24 Jan  5  2000 cplex2 -> /net/corona/data2/cplex2
+lrwxrwxrwx   1 root     other         23 Jan  5  2000 cplex3 -> /net/corona/data/cplex3
+dr-xr-xr-x   1 root     root           1 Jun 17 08:47 data
+dr-xr-xr-x   1 root     root           1 Jun 17 08:47 data1
+dr-xr-xr-x   1 root     root           1 Jun 17 08:47 data2
+drwxrwxr-x  21 root     sys         7168 Apr  2 14:34 dev
+drwxrwxr-x   7 root     sys          512 Dec 20  1999 devices
+drwxr-xr-x  33 root     sys         3584 Jun 16 03:10 etc
+drwxr-xr-x   3 root     sys          512 Nov  2  2001 export
+dr-xr-xr-x   1 root     root           1 Jun 17 08:47 external
+lrwxrwxrwx   1 root     other         18 Nov  2  2001 external.new -> /net/solardata/sd3
+lrwxrwxrwx   1 root     other          5 Oct 24  2001 gen -> lasco
+drwxrwxr-x   2 root     sys          512 Dec 20  1999 home
+drwxr-xr-x   5 root     other        512 Dec  4  2000 juke
+drwxr-xr-x   9 root     sys          512 Apr  1 12:34 kernel
+drwxr-xr-x   2 reduce   staff        512 Nov  7  2001 lasco
+lrwxrwxrwx   1 root     root           9 Dec 20  1999 lib -> ./usr/lib
+drwx------   2 root     root        8192 Dec 20  1999 lost+found
+lrwxrwxrwx   1 root     other         15 Feb  7 08:30 lz -> /net/centaur/lz
+drwx------   2 root     other        512 Dec  5  2000 Mail
+-rw-------   1 root     other        430 Sep 13  2001 mbox
+drwxrwxr-x   2 root     sys          512 Dec 20  1999 mnt
+lrwxrwxrwx   1 root     other         13 Sep 18  2001 mvi -> /net/hera/mvi
+dr-xr-xr-x   2 root     root         512 Dec 20  1999 net
+drwxr-xr-x  11 root     other        512 Jan  5  2000 nsr
+drwxr-xr-x   2 root     other        512 Feb  5 15:22 oldlz
+drwxrwxr-x   9 root     sys          512 Nov 29  2001 opt
+drwxr-xr-x   3 root     sys          512 Dec 20  1999 platform
+drwxr-xr-x   2 root     sys          512 Dec 20  1999 proc
+lrwxrwxrwx   1 root     other         11 Oct 24  2001 pub -> /net/xi/pub
+lrwxrwxrwx   1 root     other         16 Sep 18  2001 ql -> /net/minotaur/ql
+drwxrwxr-x   2 root     sys          512 Apr  1 15:07 sbin
+drwxr-xr-x   2 301      staff        512 Jan 21  2000 sybase11
+drwxrwxrwt   2 sys      sys          512 Apr  2 14:33 tmp
+drwxr-xr-x   2 root     root         512 Dec  4  2000 TT_DB
+drwxrwxr-x  33 root     sys         1024 Jan 10  2000 usr
+drwxr-xr-x  24 root     sys          512 Dec 20  1999 var
+drwxr-xr-x   2 root     root         512 Dec 20  1999 vol
+dr-xr-xr-x   2 root     root         512 Dec 20  1999 xfn
+</pre>
+</td></tr>
+</table>
+</body>
+</html>
+
+

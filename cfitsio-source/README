@@ -1,0 +1,39 @@
+
+
+
+
+
+javah
+javac
+java
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+OLD STUFF ????
+
+
+javac  FITSMain.java FITSTable.java FITSTableModel.java FITSCellEditor.java
+java FITSMain
+
+
+For some reason, testing new compilations doesn't actually load the table??
+
+
+
+

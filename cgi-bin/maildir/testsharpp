@@ -1,0 +1,8 @@
+
+
+/bin/rm mail-sharpp.list
+
+make-sharpp-list
+
+mail-sharpp
+

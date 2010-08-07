@@ -1,0 +1,22 @@
+#! /bin/sh
+#
+#	StripData
+#
+#	born	011113
+#		by	theJake
+#
+#	purpose	to create the LZ CDs which will no longer be provided
+#			by the ISTP.  The entire data set must be downloaded
+#			and stripped of the non-project data. (Simplest way)
+#
+
+/usr/ucb/echo -n "Removing non-LASCO data from "
+pwd
+
+/bin/rm -rf ./data/so/ftr
+/bin/rm -rf ./data/so/g00[0789]
+/bin/rm -rf ./data/so/g01[0123489]
+/bin/rm -rf ./data/so/g02?
+/bin/rm -rf ./data/so/g03[023456789]
+/bin/rm -rf ./data/so/g0[456789]
+

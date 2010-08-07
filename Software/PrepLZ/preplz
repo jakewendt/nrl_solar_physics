@@ -1,0 +1,57 @@
+#! /bin/sh -av
+#
+#
+#	begin script preplz
+#
+#	author	the Jake
+#	born 	000629
+#
+#	001006	the Jake	changed from running on each CD to running
+#						on a directory containing all of the d01 files.
+#	001011	the Jake	copying img_hdr.txt to $TMOUT for backup
+#	010226	the Jake	PrepLZ moved to hera, code made more mobile
+#	0110	the Jake	moved home
+#
+#	purpose:	unpack all available lz data files
+#
+#
+
+LZROOT=/net/corona/lz
+LEB_IMG=$LZROOT/leb_img
+IMAGES=$LZROOT
+REDUCE_OPTS="transfer dbms level_05"
+LAST_IMG=$LZROOT
+REDUCE_LOG=$LZROOT/reduce_log
+TMFILES=$LZROOT/tmfiles
+TMOUT=$LZROOT/tmout
+RAW=$LZROOT/raw
+DSKPATH=$LZROOT
+
+#	NRL_LIB=/net/cronus/opt/local/idl_nrl_lib
+#	IDL_DIR=/net/cronus/opt/local/rsi/idl_5.6
+#	LM_LICENSE_FILE=/net/cronus/opt/local/rsi/idl_5/bin/license.dat
+
+echo "unpack_lz_science" > $HOME/PrepLZ/lzidlscript.pro
+
+cd $TMFILES
+for datafile in `/bin/ls *.d01`
+do
+	SEQNO=`echo $datafile | cut -c1-4`
+	echo "miss_pckts,'$datafile','$SEQNO',/AUTO" >> $HOME/PrepLZ/lzidlscript.pro
+done
+
+cat $HOME/PrepLZ/lzidlscript.pro
+
+#	PAUSE TO CHECK SCRIPT
+read pause
+$IDL_DIR/bin/idl -32 $HOME/PrepLZ/lzidlscript.pro
+DATESTAMP=`date +%y%m%d`
+cp $LZ_IMG/img_hdr.txt $HOME/PrepLZ/img_hdrs/img_hdr.$DATESTAMP
+
+mv $LZ_IMG/tmfiles/*d01 $LZ_IMG/finishedtmfiles/
+mv $LZ_IMG/tmout/*d01 $LZ_IMG/tmout/done/
+
+#
+#	end script preplz
+#
+

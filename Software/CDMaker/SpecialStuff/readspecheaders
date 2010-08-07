@@ -1,0 +1,68 @@
+#! /bin/sh
+#
+#
+#	begin script read_headers
+#
+#	author:	the Jake
+#	born:	000620
+#
+
+if [ $# -ne 2 ]
+then
+	echo
+	echo "Usage:  read_headers CDTYPE 4-digit-CDNUM"
+	echo
+	echo "Example:  read_headers ql 0711"
+	echo "Example:  read_headers eit 0271"
+	echo "Example:  read_headers lz 0457"
+	echo
+	exit 1
+fi
+
+CDNUM=$2
+
+case $1 in
+	lz)	if [ -d /juke/lz_05/$CDNUM ]
+		then
+			echo "CD located."
+			cd /juke/lz_05/$CDNUM
+		else
+			echo "Unable to located specified CD."
+			exit 1
+		fi
+		;;
+	ql)	if [ -d /juke/ql_05/$CDNUM ]
+		then
+			echo "CD located."
+			cd /juke/ql_05/$CDNUM
+		else
+			echo "Unable to located specified CD."
+			exit 1
+		fi
+		;;
+	eit)	if [ -d /juke/lz_eit/$CDNUM ]
+		then
+			echo "CD located."
+			cd /juke/lz_eit/$CDNUM
+		else
+			echo "Unable to located specified CD."
+			exit 1
+		fi
+		;;
+	*)	echo
+		echo "Invalid CD type. (ql,eit or lz only)"
+		echo
+		exit 1
+		;;
+esac
+
+pwd
+
+for ftsfile in `ls -1 */*/*/*.fts`
+do
+	read_fits_hdr $ftsfile
+done
+
+#
+#	end script read_headers
+#

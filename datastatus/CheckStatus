@@ -1,0 +1,116 @@
+#! /bin/sh
+#
+#
+#	born 2001
+#	Jake
+#
+#	purpose:	to check disk space
+#
+#
+
+echo "<HTML>"
+
+echo "<BODY BGCOLOR="#000000" LINK="#669933" VLINK="#CCCC99" TEXT="#00FF00" MARGINWIDTH=100 MARGINHEIGHT=50>"
+echo "<PRE>"
+echo "Status Report as of " `date`
+echo
+
+TYPE="ql"	#	Initialize loop with ql
+while [ ! -z "$TYPE" ]
+do
+	echo "$TYPE Status: " `SizeToDo $TYPE` " kb of data over " `DaysToDo $TYPE` " days to be burnt from " `LastDate $TYPE` "."
+	echo
+	case $TYPE in
+		miscql) TYPE="";;
+		misclz) TYPE="miscql";;
+		eit)	TYPE="misclz" ;;
+		lz)	TYPE="eit";;
+		ql)	TYPE="lz";;
+	esac
+done
+
+
+#
+#	Check Drive Space availability and denote current purpose and usage of disk
+#
+
+#	ls /net/cedar/* > /dev/null
+#	ls /net/kat/* > /dev/null
+ls /net/centaur/lz > /dev/null
+ls /net/minotaur/ql > /dev/null
+ls /net/hera/mvi > /dev/null
+ls /net/xi/pub > /dev/null
+ls /net/gaelic/* > /dev/null
+ls /net/gorgon/gg* > /dev/null
+ls /net/solardata/sd* > /dev/null
+ls /net/alpha/* > /dev/null
+ls /net/beta/* > /dev/null
+ls /net/omicron/* > /dev/null
+ls /net/theta/* > /dev/null
+
+
+echo; echo "QL space"
+/bin/df -k /net/minotaur/ql | grep -vs Filesystem
+
+echo; echo "LZ space"						#	lz storage
+/bin/df -k /net/centaur/lz | grep -vs Filesystem
+
+echo; echo "LZ Data 1 (951208 - 971219)"
+/bin/df -k /net/gaelic/lz1 | grep -vs Filesystem
+
+echo; echo "LZ Data 2 (971220 - 990531)"
+/bin/df -k /net/gaelic/lz2 | grep -vs Filesystem
+
+echo; echo "LZ Data 3 (990601 - 000526)"
+/bin/df -k /net/omicron/lz3 | grep -vs Filesystem
+
+echo; echo "LZ Data 4 (000527 - 010525)"
+/bin/df -k /net/omicron/lz4 | grep -vs Filesystem
+
+echo; echo "LZ Data 5 (010526 - 020425)"
+/bin/df -k /net/theta/lz5 | grep -vs Filesystem
+
+echo; echo "LZ Data 6 (020426 - 030???)"
+/bin/df -k /net/theta/lz6 | grep -vs Filesystem
+
+echo; echo "Old LZ Root Stuff"
+/bin/df -k /net/gorgon/gg2 | grep -vs Filesystem
+
+echo; echo "MVIs and MPGs..."
+/bin/df -k /net/hera/mvi | grep -vs Filesystem			#	mvis and mpgs
+
+echo; echo "Personal Storage"
+/bin/df -k /net/xi/pub | grep -vs Filesystem
+
+echo; echo "Data"
+/bin/df -k /net/gorgon/gg5 | grep -vs Filesystem
+
+echo; echo "LZ"
+/bin/df -k /net/gorgon/gg6 | grep -vs Filesystem
+
+echo; echo "Carr Maps, EXP factor, Monthly"
+/bin/df -k /net/solardata/sd5 | grep -vs Filesystem
+
+echo; echo "Carr Maps, CMES, debris, Polarize"
+/bin/df -k /net/solardata/sd6 | grep -vs Filesystem
+
+echo; echo "RTMovie Stuff"
+/bin/df -k /net/solardata/sd4 | grep -vs Filesystem
+
+echo; echo "Personal Backup"
+/bin/df -k /net/solardata/sd7 | grep -vs Filesystem
+
+echo; echo "Dat1 (newer CMES)"
+/bin/df -k /net/beta/dat1 | grep -vs Filesystem
+
+echo; echo "Dat2 (older CMES)"
+/bin/df -k /net/alpha/dat2 | grep -vs Filesystem
+
+echo;echo;/bin/df -k | sort 
+
+
+echo; echo; echo "</PRE></BODY></HTML>"
+
+#
+#
+#

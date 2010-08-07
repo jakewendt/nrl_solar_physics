@@ -1,0 +1,57 @@
+#! /bin/sh
+#
+#
+#	begin script WriteAutoRun
+#
+#	author:	the Jake
+#	born:	000920
+#
+#	part of CDMaker
+#
+#	purpose:	Generate the autorun.inf file to be on the CD.
+#			This only serves a purpose when used on a Windows PC.
+#
+#	020910 the Jake - trying cat >> << EOF style
+#	030514 - jake - added misclz and miscql stuff
+#
+
+
+
+if [ -z "$CDROOT" -o -z "$TYPE" ]
+then
+	echo; echo "ERROR: AutoRun is only to be called from CopyCDFiles."; echo
+	exit 1
+fi
+
+DIR=`jget $TYPE.DIR`
+
+cd $CDROOT
+
+echo "[autorun]" > autorun.inf
+
+case $TYPE in
+        final)	
+			echo "icon=lz.ico" >> autorun.inf
+			cp ../lz.ico .
+			;;
+        qq|eit|lz|ql|misclz|miscql)
+			echo "icon=$TYPE.ico" >> autorun.inf
+			cp ../$TYPE.ico .
+			;;
+esac
+
+#	echo >> autorun.inf
+#	echo "shell\readme\command = Notepad.exe $DIR/readme.txt" >> autorun.inf
+#	echo "shell\readme = Read &Me" >> autorun.inf
+
+cat >> autorun.inf << EOF
+
+shell\readme\command = Notepad.exe $DIR/readme.txt
+shell\readme = Read &Me
+EOF
+
+exit
+
+#
+#	end script WriteAutoRun
+#

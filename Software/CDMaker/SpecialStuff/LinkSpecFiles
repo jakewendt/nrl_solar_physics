@@ -1,0 +1,53 @@
+#! /bin/sh
+#
+#
+#	begin script LinkCDFiles
+#
+#	author:	the Jake
+#	born: 	000705
+#
+#	modification:
+#		000719 - the Jake - including jget technique
+#
+#	LinkCDFiles lz 0457
+#
+
+CDLTS='.'
+TYPE=$1
+CDDIR=/juke/lz_05
+DATAPATH=$LZ_IMG/misc
+LINKPATH=$LZ_IMG/misc
+CDNUM=$2
+CDPATH=$CDDIR/$CDNUM
+
+for EACHFILE in `cat $CDLTS/$TYPE.$CDNUM.list`
+do
+	if [ -r $CDPATH/$EACHFILE.fts -a -s $CDPATH/$EACHFILE.fts ]
+	then
+		echo "  $CDPATH/$EACHFILE.fts found ok."
+		if `/bin/rm $DATAPATH/$EACHFILE.fts`
+		then
+			echo "  Removed $DATAPATH/$EACHFILE.fts"
+		else
+			echo;	echo "---ERROR Removing $DATAPATH/$EACHFILE.fts";		echo
+			read pause
+		fi
+
+		if `ln -s $CDPATH/$EACHFILE.fts $LINKPATH/$EACHFILE.fts`
+		then
+			echo "  Created link for $CDPATH/$EACHFILE.fts $LINKPATH/$EACHFILE.fts"
+		else
+			echo;	echo "---ERROR Linking $CDPATH/$EACHFILE.fts $LINKPATH/$EACHFILE.fts";	echo
+			read pause
+		fi
+	else
+		echo;	echo "---ERROR:  $CDPATH/$EACHFILE.fts not found";	echo
+		read pause
+	fi
+done
+
+exit		#	Clean Exit
+
+#
+#	end script LinkCDFiles
+#

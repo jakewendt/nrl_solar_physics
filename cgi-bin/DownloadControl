@@ -1,0 +1,31 @@
+#!/bin/sh
+#	
+#	DownloadControl
+#
+#	determines whether user is trying to download the FITS
+#		file or whether they are trying to make a movie
+#
+#	
+
+
+read form_args
+echo "$form_args" > /tmp/lasco.$$
+
+
+#
+#	BAD CODE TO DO THIS THIS WAY, BUT WORKS FOR NOW
+#	SHOULD REALLY SEARCH FOR A VARIABLE AND ITS VALUE
+#	AS OPPOSED TO CHECKING THE FIRST WORD
+#
+GAWK=/net/cronus/opt/gnu/bin/gawk
+FIRSTARG=`echo "$form_args" | $GAWK -F\& '{print $1}' | $GAWK -F\= '{print $1}'`
+
+if [ "$FIRSTARG" = "Submit" ]
+then
+	/net/louis14/export/home/apache/share/cgi-bin/MovieTool/moviemenu.sh < /tmp/lasco.$$
+else
+	/net/louis14/export/home/apache/share/cgi-bin/download < /tmp/lasco.$$
+fi
+
+/bin/rm -f /tmp/lasco.$$
+

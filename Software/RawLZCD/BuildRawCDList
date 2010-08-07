@@ -1,0 +1,72 @@
+#! /bin/sh -a
+#
+#	BuildRawCDList $CDNUM
+#
+#	born 011127
+#	by the Jake
+#
+#	part of RawLZCD
+#
+#	purpose:	Build a list of files to be in CD
+#
+
+Usage()
+{	echo
+	echo "Usage:  $0 CDNUM"
+	echo
+	echo "Example:  $0 1266"
+	echo
+	return;
+}
+
+if [ $# -ne 1 ]; then Usage; exit 1; fi
+
+FIRST=`tail -1 $RAWLZCD/cdlog | gawk '{print $2}'`
+
+CDLIST=$CDLTS/$CDNUM.list
+echo "$FIRST" > $CDLIST
+/bin/echo "\t$CDNUM\tStatus Log" > $STATUSLOG
+/bin/echo "From:\t\t$FIRST" >> $STATUSLOG
+
+#TEMP=`/bin/du -sk $SOCDRAW/SO_ALL_LZ_"$FIRST" | gawk '{print $1}'`
+TEMP=`/bin/du -sk $SOCDRAW/$FIRST | gawk '{print $1}'`
+SIZE=`expr ${TEMP:-0} \* 1024`
+
+#NUM=`/bin/ls -1d $SOCDRAW/SO_ALL_LZ* | grep -ns $FIRST | gawk -F: '{print $1}' | head -1`
+NUM=`/bin/ls -1d $SOCDRAW/200* | grep -ns $FIRST | gawk -F: '{print $1}' | head -1`
+NUM=`expr $NUM + 1`
+
+#for NEXTDATE in `/bin/ls -1d $SOCDRAW/SO_ALL_LZ* | tail +$NUM`
+for NEXTDATE in `/bin/ls -1d $SOCDRAW/200* | tail +$NUM`
+do
+        TEMP=`/bin/du -sk $NEXTDATE | gawk '{print $1}'`
+        SIZE=`expr $SIZE + ${TEMP:-0} \* 1024`
+        if [ $SIZE -lt $CDMAX ]
+        then
+                echo "  Adding $NEXTDATE to cd list..."
+		#echo "$NEXTDATE" | gawk -F_ '{print $NF}' >> $CDLIST
+		echo "$NEXTDATE" | gawk -F/ '{print $NF}' >> $CDLIST
+        else
+                SIZE=`expr $SIZE - $TEMP \* 1024`
+                #LASTDATE=`echo $NEXTDATE | gawk -F_ '{print $NF}'`
+                LASTDATE=`echo $NEXTDATE | gawk -F/ '{print $NF}'`
+                break
+        fi
+done
+
+echo "  Writing new information to log file..."
+echo "  Finished creating list for CDNUM $CDNUM"
+echo ""
+LASTFILE=`tail -1 $CDLIST`
+/bin/echo "\t$LASTFILE" >> $LOG
+/bin/echo "To:\t\t$LASTFILE" >> $STATUSLOG
+/bin/echo "List Built: \t\c" >> $STATUSLOG
+date >> $STATUSLOG
+CDNUM=`expr $CDNUM + 1`
+/bin/echo "$CDNUM\t$LASTDATE\c" >> $LOG
+
+
+
+#
+#	end BuildRawCDList
+#

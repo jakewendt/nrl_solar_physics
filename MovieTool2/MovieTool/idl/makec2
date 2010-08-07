@@ -1,0 +1,76 @@
+
+IDL[hercules]>img=lasco_readfits('22141903.fts',hdr)
+% Compiled module: LASCO_READFITS.
+% Compiled module: READFITS.
+% Compiled module: SXPAR.
+% Compiled module: GETTOK.
+% Compiled module: VALID_NUM.
+% READFITS: Now reading 1024 by 1024 array
+% Compiled module: DATATYPE.
+% Compiled module: FXPAR.
+% Compiled module: LASCO_FITSHDR2STRUCT.
+% Compiled module: TRIM.
+% Compiled module: FILEPATH.
+%%LASCO_READFITS took        4.4157480 seconds.
+IDL[hercules]>oimg=make_image_c2(img,hdr)
+% Compiled module: MAKE_IMAGE_C2.
+% Compiled module: LOADCT.
+% LOADCT: Loading table RED TEMPERATURE
+% Compiled module: REDUCE_STD_SIZE.
+%%Running REDUCE_STD_SIZE
+% Compiled module: OFFSET_BIAS.
+% Compiled module: POLY.
+% REDUCE_STD_SIZE: Offset bias subtracted.
+% Compiled module: GETBKGIMG.
+% Compiled module: STR2UTC.
+% Compiled module: DELVARX.
+% Compiled module: BOOST_ARRAY.
+% Compiled module: UTC2INT.
+% Compiled module: DATE2MJD.
+% Compiled module: CHECK_INT_TIME.
+% Compiled module: GET_LEAP_SEC.
+% Compiled module: GET_UTC.
+% Compiled module: FIND_WITH_DEF.
+% Compiled module: FIND_ALL_DIR.
+% Compiled module: BREAK_PATH.
+% Compiled module: OS_FAMILY.
+% Compiled module: EXIST.
+% Compiled module: TAG_EXIST.
+% Compiled module: STR_SEP.
+% Compiled module: UTC2TAI.
+% Compiled module: ROLL_TIMES.
+% Compiled module: CHECK_EXT_TIME.
+% Compiled module: INT2UTC.
+% Compiled module: MJD2DATE.
+DIR             STRING    = '/net/corona/lasco/monthly'
+% Compiled module: ABBRV_FILPOL.
+% Compiled module: BREAK_FILE.
+% Compiled module: UTC2YYMMDD.
+% Compiled module: UTC2STR.
+% Compiled module: YYMMDD2UTC.
+% Compiled module: FIND_CLOSEST.
+% Compiled module: FILE_EXIST.
+% Compiled module: FILE_STAT.
+% Compiled module: DATA_CHK.
+% Compiled module: SINCE_VERSION.
+reading 2m_orcl_030114.fts
+% READFITS: Now reading 1024 by 1024 array
+%%LASCO_READFITS took       0.62286794 seconds.
+% READFITS: Now reading 1024 by 1024 array
+%%LASCO_READFITS took       0.63312507 seconds.
+Using 2m_orcl_030304.fts to interpolate.
+Dummy date is 2003/03/01
+FACTOR          DOUBLE    =       0.95875980
+BOX_AVG         DOUBLE    =        2022.3030
+% Compiled module: GET_SUN_CENTER.
+% Compiled module: GET_ROLL_OR_XY.
+% Compiled module: DIRPATH.
+Using /net/cronus/opt/local/idl_nrl_lib/idl/data_anal/data/c2_avg_rollxy_20010718_20010922.dat
+% Compiled module: GET_SEC_PIXEL.
+% Compiled module: SUBTENSE.
+% Compiled module: SOLAR_EPHEM.
+% Compiled module: TVCIRCLE.
+% Compiled module: RTMVIXY.
+% Compiled module: ADD_LASCO_LOGO.
+% Compiled module: CONGRID.
+

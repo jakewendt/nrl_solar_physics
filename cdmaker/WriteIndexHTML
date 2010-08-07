@@ -1,0 +1,102 @@
+#! /bin/sh
+#
+#
+#	begin script WriteIndexHTML
+#
+#	author:	the Jake
+#	born:	010328
+#
+#	part of CDMaker
+#
+#	purpose:	Generate the HTML files to be on the CD
+#			The HTML code allows browsing of the JPGs
+#
+#	020910 the Jake - 	trying cat >> << EOF
+
+DIR=`jget $1.DIR`
+CDROOT=$CDMAKER/CDSOURCE/$DIR
+cd $CDROOT
+
+#	echo "<HTML>" > index.html
+#	echo "<P ALIGN="CENTER">" >> index.html
+#	echo "<BASE TARGET=\"FRAME_TARGET\">" >> index.html
+#	echo "<FRAMESET COLS=\"250,*\">" >> index.html
+#	echo "<FRAME SRC=\"contents.html\">" >> index.html
+#	echo "<FRAME SRC=\"readme.txt\" NAME=\"FRAME_TARGET\">" >> index.html
+#	echo "</FRAMESET>" >> index.html
+
+cat > index.html << EOF
+<HTML>
+<P ALIGN="CENTER">
+<BASE TARGET="FRAME_TARGET">
+<FRAMESET COLS="250,*">
+<FRAME SRC="contents.html">
+<FRAME SRC="readme.txt" NAME="FRAME_TARGET">
+</FRAMESET>
+EOF
+
+
+#	echo "<HTML>" > contents.html
+#	echo "<P ALIGN=\"LEFT\"><br><br>" >> contents.html
+#	echo "<a href=\"readme.txt\" TARGET=\"FRAME_TARGET\">CD Information</a><br><br>" >> contents.html
+
+cat > contents.html << EOF
+<HTML>
+<P ALIGN="LEFT"><br><br>
+<a href="readme.txt" TARGET="FRAME_TARGET">CD Information</a><br><br>
+EOF
+
+case $1 in
+	qq|lz|eit|ql|final)
+		for eachdir in `/bin/ls -d level_05/*/*`
+		do
+			htmlfile=`echo $eachdir | gawk -F/ 'BEGIN{OFS=""} {print $2,$3}'`
+			datecamdir=`echo $eachdir | gawk -F/ 'BEGIN{OFS="/"}{print $2,$3}'`
+		
+			echo "<a href=\"$htmlfile.html\" TARGET=\"FRAME_TARGET\">$datecamdir/jpg preview</a><br>" >> contents.html
+			echo "<a href=\"$eachdir/img_hdr.txt\" TARGET=\"FRAME_TARGET\">$datecamdir/img_hdr.txt</a><br><br>" >> contents.html
+		
+			echo "<HTML>" > $htmlfile.html
+			echo "<P ALIGN=\"CENTER\">" >> $htmlfile.html
+
+			for eachfile in `/bin/ls -1 $eachdir/*.fts | gawk -F/ 'BEGIN{OFS="/"}{print $2,$3,$4}' | gawk -F. '{print $1}'`
+			do
+				echo "<a href=\"level_05/$eachfile.fts\"><img src=\"level_05/$eachfile.jpg\"></a><br>" >> $htmlfile.html
+				echo "<a href=\"level_05/$eachfile.fts\">$eachfile.fts</a><br><br>" >> $htmlfile.html
+			done
+			echo "</P></HTML>" >> $htmlfile.html
+		done
+		;;
+	miscql|misclz)
+		for eachdir in `/bin/ls -d misc/*/*/*`
+		do
+			htmlfile=`echo $eachdir | gawk -F/ 'BEGIN{OFS=""} {print $2,$3,$4}'`		#	ex. c1dark960101
+			datecamdir=`echo $eachdir | gawk -F/ 'BEGIN{OFS="/"}{print $2,$3,$4}'`	#	ex. c1/dark/960101
+		
+			echo "<a href=\"$htmlfile.html\" TARGET=\"FRAME_TARGET\">$datecamdir/jpg preview</a><br>" >> contents.html
+			echo "<a href=\"$eachdir/img_hdr.txt\" TARGET=\"FRAME_TARGET\">$datecamdir/img_hdr.txt</a><br><br>" >> contents.html
+		
+			echo "<HTML>" > $htmlfile.html
+			echo "<P ALIGN=\"CENTER\">" >> $htmlfile.html
+
+			for eachfile in `/bin/ls -1 $eachdir/*.fts | gawk -F/ 'BEGIN{OFS="/"}{print $2,$3,$4,$5}' | gawk -F. '{print $1}'`
+			do
+				echo "<a href=\"misc/$eachfile.fts\"><img src=\"misc/$eachfile.jpg\"></a><br>" >> $htmlfile.html
+				echo "<a href=\"misc/$eachfile.fts\">$eachfile.fts</a><br><br>" >> $htmlfile.html
+			done
+			echo "</P></HTML>" >> $htmlfile.html
+		done
+
+		;;
+esac
+
+echo "</P></HTML>" >> contents.html
+
+echo "</P></HTML>" >> index.html
+
+exit
+
+#
+#	end script WriteIndexHTML
+#
+#

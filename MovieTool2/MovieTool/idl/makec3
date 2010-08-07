@@ -1,0 +1,83 @@
+
+IDL[hercules]>img=lasco_readfits('32102554.fts', hdr)
+% Compiled module: LASCO_READFITS.
+% Compiled module: READFITS.
+% Compiled module: SXPAR.
+% Compiled module: GETTOK.
+% Compiled module: VALID_NUM.
+% READFITS: Now reading 1024 by 1024 array
+% Compiled module: DATATYPE.
+% Compiled module: FXPAR.
+% Compiled module: LASCO_FITSHDR2STRUCT.
+% Compiled module: TRIM.
+% Compiled module: FILEPATH.
+%%LASCO_READFITS took        4.5548530 seconds.
+IDL[hercules]>oimg=make_image_c3(img, hdr)
+% Compiled module: MAKE_IMAGE_C3.
+% Compiled module: LOADCT.
+% LOADCT: Loading table BLUE/WHITE
+% Compiled module: GAMMA_CT.
+MDN             FLOAT     =       1346.00
+% Compiled module: REDUCE_STD_SIZE.
+%%Running REDUCE_STD_SIZE
+% Compiled module: OFFSET_BIAS.
+% Compiled module: POLY.
+% REDUCE_STD_SIZE: Offset bias subtracted.
+Reading /net/cronus/opt/local/idl_nrl_lib/lasco/data/calib/c3clearmask2.fts
+% READFITS: Now reading 1024 by 1024 array
+% READFITS: Now reading 1024 by 1024 array
+% Compiled module: GETBKGIMG.
+% Compiled module: STR2UTC.
+% Compiled module: DELVARX.
+% Compiled module: BOOST_ARRAY.
+% Compiled module: UTC2INT.
+% Compiled module: DATE2MJD.
+% Compiled module: CHECK_INT_TIME.
+% Compiled module: GET_LEAP_SEC.
+% Compiled module: GET_UTC.
+% Compiled module: FIND_WITH_DEF.
+% Compiled module: FIND_ALL_DIR.
+% Compiled module: BREAK_PATH.
+% Compiled module: OS_FAMILY.
+% Compiled module: EXIST.
+% Compiled module: TAG_EXIST.
+% Compiled module: STR_SEP.
+% Compiled module: UTC2TAI.
+% Compiled module: ROLL_TIMES.
+% Compiled module: CHECK_EXT_TIME.
+% Compiled module: INT2UTC.
+% Compiled module: MJD2DATE.
+DIR             STRING    = '/net/corona/lasco/monthly'
+% Compiled module: ABBRV_FILPOL.
+% Compiled module: BREAK_FILE.
+% Compiled module: UTC2YYMMDD.
+% Compiled module: UTC2STR.
+% Compiled module: YYMMDD2UTC.
+% Compiled module: FIND_CLOSEST.
+% Compiled module: FILE_EXIST.
+% Compiled module: FILE_STAT.
+% Compiled module: DATA_CHK.
+% Compiled module: SINCE_VERSION.
+reading 3m_clcl_030225.fts
+% READFITS: Now reading 1024 by 1024 array
+%%LASCO_READFITS took       0.60469103 seconds.
+% READFITS: Now reading 1024 by 1024 array
+%%LASCO_READFITS took       0.61125600 seconds.
+Using 3m_clcl_030304.fts to interpolate.
+Dummy date is 2003/03/01
+FACTOR          DOUBLE    =       0.71014067
+DBIAS           FLOAT     =      0.209891
+BOX_REF         DOUBLE    =        36.842105
+BOX_AVG         DOUBLE    =        39.581799
+M               FLOAT     =      0.939400
+% Compiled module: GET_SUN_CENTER.
+% Compiled module: GET_ROLL_OR_XY.
+% Compiled module: DIRPATH.
+Using /net/cronus/opt/local/idl_nrl_lib/idl/data_anal/data/c3_avg_rollxy_20010718_20010922.dat
+% Compiled module: GET_SEC_PIXEL.
+% Compiled module: SUBTENSE.
+% Compiled module: SOLAR_EPHEM.
+% Compiled module: TVCIRCLE.
+% Compiled module: RTMVIXY.
+% Compiled module: ADD_LASCO_LOGO.
+% Compiled module: CONGRID.

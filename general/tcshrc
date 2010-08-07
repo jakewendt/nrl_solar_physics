@@ -1,0 +1,146 @@
+#################################################################
+#
+#         .tcshrc file
+#
+#         initial setup file for both interactive and noninteractive
+#         C-Shells
+#
+#################################################################
+
+alias mv            'mv -i'
+alias rm            'rm -i'
+alias del          	'rm -i'
+alias .            'echo $cwd'
+alias ..           'set dot=$cwd;cd ..'
+alias ,            'cd $dot'
+
+#	set up search path
+#	first add directories for local commands
+set lpath = (/net/cronus/opt/bin /opt/bin /opt/gnu/bin /usr/local/bin /usr/local/AnswerBook/bin /usr/local/sybase/bin /usr/openwin/bin /usr/ccs/bin /opt/local/bin)
+
+set lcd = ( )  #  add parents of frequently used directories
+set cdpath = (.. ~ ~/bin ~/src $lcd /net/corona)
+
+umask 022
+
+setenv mail 5
+setenv OPENWINHOME /usr/openwin
+
+if (-e /net/cronus/opt/localtcshrc.new) source /net/cronus/opt/localtcshrc.new	#	added 020129
+
+#
+# Sybase environment
+#
+setenv SYBASE /usr/local/sybase
+setenv DSQUERY LASCO
+setenv SYBASE_TERM xterm_c.sun
+setenv SYBLANGUAGE us_english
+setenv SYBFORMLIST ". $HOME/aptforms "
+# End Sybase Environments
+
+setenv mail 5
+
+set history=100
+set ignoreeof
+set savehist=100
+
+set notify
+
+unset $TETEXDIR
+unset $TEXMF
+set prompt="$USER@`hostname`\!: "
+#
+# Aliases
+#
+setenv LD_LIBRARY_PATH /usr/local/lib:$HOME/realvideo/rvplayer5.0:/usr/lib:/usr/dt/lib:/usr/openwin/lib:/net/cronus/opt/local/lib:$HOME/.local/lib:/usr/local/kde/lib:/usr/local/qt/lib:/opt/SUNWns6/dist/lib/:/usr/sfw/include:.
+
+set PATH = ( . ~/bin /usr/sbin $OPENWINHOME/bin /usr/bin /usr/local/bin /opt/SUNWns6 /net/cronus/opt/bin /net/cronus/opt/gnu/bin /net/cronus/opt/NeWSprint/bin /usr/sbin /usr/ucb /sbin /opt/bin $HOME/.RealPlayer8 ~/.local/bin /usr/ccs/bin /usr/local/kde/bin $HOME/CDMaker /opt/gnome-2.0/bin )
+
+
+#######   Jake's additions.  #############
+
+setenv KDEDIR /usr/local/kde
+
+source /net/cronus/opt/idl_setup
+
+setenv NRL_LIB /net/cronus/opt/local/idl_nrl_lib
+setenv IDL_DIR /net/cronus/opt/local/rsi/idl_5.6
+alias idl idl56 -32 #	the -32 is needed bc some ephem.so won't work without it
+setenv LM_LICENSE_FILE /net/cronus/opt/local/rsi/idl_5/bin/license.dat
+
+#	$imax first so as to use Nathan's newer files
+setenv imax /net/corona/pub/nathan/imgpros/
+setenv IDL_PATH \+\$imax:\+\$IDL_DIR/lib:\+\$SSW/soho/eit:\+\$SSW/soho/gen:\+\$SSW/gen:\+\$NRL_LIB:\+\$IDL_DIR/examples:\+\$SSW/soho
+
+unset noclobber
+
+#	OTHER COMMON SETTINGS
+setenv trash $HOME/.trash	#	recycle bin
+setenv bin $HOME/.bin		#	short scripts and execs
+setenv OPERATOR reduce@hercules
+
+alias k kwrite
+alias t textedit
+unalias ls
+#alias ls '/bin/ls'
+alias ll ls -l
+alias l ls -l
+alias lm 'ls -l \!* | more'
+alias la ls -la
+alias ld ls -ld
+set path = ( $home/.bin $home/bin /usr/bin/sparcv9 /usr/bin /usr/sbin /usr/local/bin /opt/SUNWns6 $path /usr/ccs/bin $home/.local/bin /usr/local/kde/bin /usr/local/enlightenment/bin $HOME/.RealPlayer8 /opt/gnome-2.0/bin)
+
+unalias pwd
+unset pwd
+unalias chdir
+unset chdir
+alias cd 'chdir \!*;prmpt_s'
+prmpt_s
+
+unalias df
+alias df '/bin/df -k | sort'
+
+unalias soffice
+
+setenv CLASSPATH \$CLASSPATH:/net/cronus/opt/local/netscape/java/classes:\$HOME/.netscape/plugins:.
+
+setenv lasco /net/louis14/export/home/apache/share/htdocs/lasco-www
+
+setenv MANPATH /usr/share/man:/usr/local/man:$MANPATH
+
+setenv LG $HOME/logs
+setenv CDMAKER $HOME/CDMaker
+setenv QL_IMG /net/corona/ql
+setenv QLDATA /net/corona/ql
+setenv LZ_IMG /net/corona/lz
+setenv LZDATA /net/corona/lz
+setenv MVIS /net/corona/mvi
+setenv FIRST_DIR $HOME/FirstShift
+setenv PRO $HOME/idlpros
+setenv Archive $HOME/Archive
+
+
+setenv GZIP "-v9"
+
+setenv WEBDIR /net/louis14/export/home/apache/share/htdocs/lasco-www/
+
+setenv RAWLZCD /home/reduce/RawLZCD/
+setenv SOCDRAW $RAWLZCD/SOCDRAW/
+
+alias encrypt pgp -sea 
+alias decrypt pgp
+
+setenv QTDIR /usr/local/qt
+set PATH = ( $QTDIR/bin $PATH )
+setenv MANPATH $QTDIR/doc/man:$MANPATH
+setenv LD_LIBRARY_PATH $QTDIR/lib:$LD_LIBRARY_PATH
+
+# by Sun Microsystems setup
+setenv DBROOT /usr/local/bin/adabas
+setenv DBWORK /usr/local/bin/adabas/sql
+setenv DBCONFIG /usr/local/bin/adabas/sql
+#setenv PATH "$DBROOT/bin $DBROOT/pgm $PATH"
+setenv LD_LIBRARY_PATH $DBROOT/lib:$LD_LIBRARY_PATH
+#set autologout=0
+unset autologout
+

@@ -1,0 +1,174 @@
+#!/bin/sh
+#	
+#	moviemenu.sh
+#
+#
+#	
+
+DIR="/export/home/apache/share/htdocs/lasco-www/MovieTool"
+
+read form_args
+
+
+echo Content-type: text/html
+echo 
+
+
+echo "<html> <head> <title> LASCO Movie Machine </title> </head>"
+
+
+
+cat html/body1
+
+cat << EOF
+	<br>
+	If you've created a list which includes multiple cameras and/or multiple filters etc., ...
+	Well, you get what you get.
+	<br>
+
+
+	<br><center>
+	<FORM METHOD="POST" ACTION="/cgi-bin/MovieTool/make_images.sh">
+	<INPUT TYPE="submit" VALUE="MAKE MOVIE">
+	<INPUT TYPE="reset" VALUE="Reset">
+	to clear entries.
+	</center>
+	<br>
+
+	<!--
+	<input type="text" NAME="email" size=34></textarea> 
+	email address for large job notification
+	<p>
+	-->
+
+
+	<p>Reduction Level ( Still working on EIT Level 1 )
+	<SELECT NAME="level">
+	<OPTION VALUE="05"> Level-0.5 (No reduction)
+	<OPTION VALUE="10" SELECTED> Level-1.0 (basic reduction)
+	</SELECT>
+
+	<p>Movie Frame Size
+	<SELECT NAME="outsize">
+	<OPTION VALUE="128"> 128 x 128
+	<OPTION VALUE="256"> 256 x 256
+	<OPTION VALUE="512" SELECTED> 512 x 512
+	<OPTION VALUE="1024"> 1024 x 1024
+	</SELECT>
+
+	<p>Java Movies have a "jumptoURL" feature which has not been disabled.
+	After a period of time it will try to go to a new URL.
+	I'm working on this.
+
+
+	<p>Output Format 
+	<SELECT NAME="outtype">
+	<OPTION VALUE="JS" SELECTED> JavaScript Movie
+	<OPTION VALUE="JAVA"> Java Movie
+	<OPTION VALUE="MPG1"> MPEG-1
+	<OPTION VALUE="GIF"> Series of GIFs
+	<OPTION VALUE="AGIF"> Animated GIF (Single Run)
+	<OPTION VALUE="AGIFL"> Animated GIF (Infinite Loop)
+	<OPTION VALUE="PNG"> Series of PNGs
+	<OPTION VALUE="MNG"> Animated PNGs (MNG - 10 loops)
+	<OPTION VALUE="JPG"> Series of JPGs
+	</SELECT>
+		<br>
+		(The GIF files will be available for all except JPG and PNG series.)<br>
+		(It is possible to make a different product from these GIFs 
+		after the GIFs are created without reprocessing them. )<br>
+
+	<!-- Don't use the names min or max -->
+	<!-- Maybe use sliders or something here -->
+	<p>Scaling (relative to default) --
+	Max
+	<SELECT NAME="maximum">
+	<OPTION VALUE="+0.5"> +0.5
+	<OPTION VALUE="+0.4"> +0.4
+	<OPTION VALUE="+0.3"> +0.3
+	<OPTION VALUE="+0.2"> +0.2
+	<OPTION VALUE="+0.1"> +0.1
+	<OPTION VALUE="+0.0" SELECTED> 0
+	<OPTION VALUE="-0.1"> -0.1
+	<OPTION VALUE="-0.2"> -0.2
+	<OPTION VALUE="-0.3"> -0.3
+	<OPTION VALUE="-0.4"> -0.4
+	<OPTION VALUE="-0.5"> -0.5
+	</SELECT>
+	Min
+	<SELECT NAME="minimum">
+	<OPTION VALUE="+0.5"> +0.5
+	<OPTION VALUE="+0.4"> +0.4
+	<OPTION VALUE="+0.3"> +0.3
+	<OPTION VALUE="+0.2"> +0.2
+	<OPTION VALUE="+0.1"> +0.1
+	<OPTION VALUE="+0.0" SELECTED> 0
+	<OPTION VALUE="-0.1"> -0.1
+	<OPTION VALUE="-0.2"> -0.2
+	<OPTION VALUE="-0.3"> -0.3
+	<OPTION VALUE="-0.4"> -0.4
+	<OPTION VALUE="-0.5"> -0.5
+	</SELECT>
+		
+	<p>Comments<br>
+	<textarea name="comments" cols="60" rows="5"></textarea>
+	
+	<br>
+	<br>
+	<hr>
+	<hr>
+
+	<p>Color Table (NOT INCLUDED YET)
+	<SELECT NAME="colortable">
+	<OPTION VALUE="BW" SELECTED> 00_B-W LINEAR
+	<OPTION VALUE="BLUE"> 01_BLUE/WHITE
+	<OPTION VALUE="RED"> 03_RED TEMPERATURE
+	</SELECT>
+		
+	<p>Image Types (NOT WORKING CORRECTLY YET)<br>
+	<INPUT TYPE="radio" NAME="imgtype" VALUE="norm" CHECKED>Regular Images<br>
+	<INPUT TYPE="radio" NAME="imgtype" VALUE="diff">Running Difference Images<br>
+
+EOF
+#########################################################################################
+
+GAWK=/net/cronus/opt/gnu/bin/gawk
+
+echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) print $i}' > /tmp/lasco0.$$
+cat /tmp/lasco0.$$ | /usr/bin/sed 's:%2F:/:g' > /tmp/lasco1.$$ 		#	Replace %2F with /
+cat /tmp/lasco1.$$ | $GAWK -F\+ '{print $1}' > /tmp/lasco2.$$		#	Remove file size
+cat /tmp/lasco2.$$ | grep -vs Submit | grep -vs Option > /tmp/lasco3.$$		#	Remove Submit and Option
+
+#	OPTION with equal either "all", "file", "rest"
+#	"file"=Only Marked Files, "rest"=All But Marked Files, "all"=All Listed Files
+#	A checked file will be on 2 lines named "file" and "all", unchecked will only be named "all"
+#	kinda confuzin, but not my doin
+OPTION=`cat /tmp/lasco2.$$ | grep Options | $GAWK -F\= '{print $2}'`
+
+#
+#	Determine which files in list to use
+#
+case $OPTION in
+	file)		#	only files with "file" name
+		cat /tmp/lasco3.$$ | grep "file=" | $GAWK -F\= '{print $2}' > /tmp/lasco4.$$
+		;;
+	rest)		#	only files listed once (assuming properly sorted)
+		cat /tmp/lasco3.$$ | $GAWK -F\= '{print $2}' | uniq -u > /tmp/lasco4.$$
+		;;
+	all)			#	all files
+		cat /tmp/lasco3.$$ | grep "all=" | $GAWK -F\= '{print $2}' > /tmp/lasco4.$$
+		;;
+esac
+
+#	
+#	Output data to 'form' so will be passed on down the line
+#
+cat /tmp/lasco4.$$ | $GAWK '{print "<INPUT TYPE=HIDDEN NAME=ffile VALUE="$1"\>"}'
+/bin/rm -f /tmp/lasco?.$$
+
+
+#########################################################################################
+
+cat html/footer
+
+

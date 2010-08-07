@@ -1,0 +1,40 @@
+#! /bin/sh -a
+#
+#
+#	begin script GetQKL
+#
+#	author:	the Jake
+#	born:	000626
+#
+#	GetQKL YQKL
+#
+#	part of FirstShift
+#
+#	purpose:	download all new QKL files
+#
+
+YQKL=$1
+cd $FIRST_DIR/scripts
+rm QKLList
+
+#       Check for time stamped QKL files from yesterday
+#
+printf "%b\n%b\n%s\n%s\n%s\n" "cd tlm_files/ELASCL" "ls -l" "quit" | ftp -v soc.nascom.nasa.gov | grep .QKL | grep ELASC | grep "$YQKL" | awk '{print $9}' > QKLList
+
+echo
+echo "-- Looking for new QKL files."
+
+cd $TMFILES
+for QKLfile in `cat $FIRST_DIR/scripts/QKLList`
+do
+	jpull "soc.nascom.nasa.gov/tlm\_files/ELASCL/$QKLfile"
+	echo "  Downloading $QKLfile" #>> $1
+        /usr/ucb/mail -s "QKL Downloaded : $QKLfile" $OPERATOR < /dev/null
+done
+
+echo "-- Done looking for new QKL files."
+echo
+
+#
+#	end script GetQKL
+#

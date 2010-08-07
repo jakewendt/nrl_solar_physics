@@ -1,0 +1,130 @@
+#! /bin/sh
+#
+#
+#	begin script LinkCDFiles
+#
+#	author:	the Jake
+#	born: 	000705
+#
+#	part of CDMaker
+#
+#	purpose:	used to link each FITS file from it original
+#			location to a CD
+#
+#	modification:
+#		000719 - the Jake - including jget technique
+#
+#	LinkCDFiles lz 0457
+#
+
+Usage()
+{
+	echo
+	echo "Usage:  LinkCDFiles CDTYPE CDNUM"
+	echo
+	echo "Example:  LinkCDFiles lz 0457"
+	echo "List must exist.  No wildcards."
+	echo
+	return;
+}
+
+CDLTS=$CDMAKER/CDLISTS
+
+if [ $# -ne 2 ]; then Usage; exit 1; fi
+
+case $1 in
+	lz|ql|eit)	TYPE=$1
+			CDDIR=`jget $TYPE.CDDIR`
+			DIR=`jget $TYPE.DIR`
+			DATAPATH=`jget $TYPE.DATA`
+			LINKPATH=`jget $TYPE.LINK`
+			;;
+	*)		Usage
+			exit 1		;;
+esac
+
+if [ -r $CDLTS/$TYPE.$2.list -a -s $CDLTS/$TYPE.$2.list ]
+then
+        CDNUM=$2
+else
+        echo "  ERROR:  List not found for $TYPE CD $2"
+        Usage
+        exit 1
+fi
+
+CDPATH=$CDDIR/$CDNUM/$DIR/level_05
+
+if [ ! -d $CDPATH ]
+then
+	echo "  ERROR:  CD not found.  Will not link."
+	Usage
+	exit 1
+fi
+
+for EACHFILE in `cat $CDLTS/$TYPE.$CDNUM.list`
+do
+	if [ -r $CDPATH/$EACHFILE.fts -a -s $CDPATH/$EACHFILE.fts ]
+	then
+		echo "  $CDPATH/$EACHFILE.fts found ok."
+		chmod 666 $DATAPATH/$EACHFILE.fts		#	added 020123 after made everything read-only
+		if `/bin/rm $DATAPATH/$EACHFILE.fts`
+		then
+			echo "  Removed $DATAPATH/$EACHFILE.fts"
+		else
+			echo
+            echo "---ERROR Removing $DATAPATH/$EACHFILE.fts"
+            echo
+			read pause
+		fi
+
+#		if [ $TYPE = "ql" ]
+#		then
+#			if `/bin/rm $LINKPATH/$EACHFILE.fts`
+#			then
+#				echo "  Removed $LINKPATH/$EACHFILE.fts"
+#			else
+#				echo
+#				echo "---ERROR Removing $LINKPATH/$EACHFILE.fts"
+#				echo
+#				read pause
+#			fi
+#
+#			if `/bin/rm $DATAPATH/$EACHFILE.jpg`
+#			then
+#				echo "  Removed $DATAPATH/$EACHFILE.jpg"
+#			else
+#				echo
+#				echo "---ERROR Removing $DATAPATH/$EACHFILE.jpg"
+#				echo
+#				read pause
+#			fi
+#			#	IF CAMERA DIR EMPTY (EXCEPT IMG_HDR.TXT) THEN REMOVE IT
+#			#	IF DATE DIR EMPTY THEN REMOVE IT
+#		fi
+
+		if `ln -s $CDPATH/$EACHFILE.fts $LINKPATH/$EACHFILE.fts`
+		then
+			echo "  Created link for $CDPATH/$EACHFILE.fts $LINKPATH/$EACHFILE.fts"
+		else
+			echo
+            echo "---ERROR Linking $CDPATH/$EACHFILE.fts $LINKPATH/$EACHFILE.fts"
+            echo
+			read pause
+		fi
+	else
+		echo
+        echo "---ERROR:  $CDPATH/$EACHFILE.fts not found"
+        echo
+		read pause
+	fi
+done
+STATUSLOG=$CDMAKER/CDSTATUS/$TYPE.$CDNUM.status
+/usr/ucb/echo -n "Linked:      " >> $STATUSLOG
+date >> $STATUSLOG
+mv $CDLTS/$TYPE.$CDNUM.list $CDLTS/Archive
+mv $STATUSLOG $CDMAKER/CDSTATUS/Archive
+exit		#	Clean Exit
+
+#
+#	end script LinkCDFiles
+#

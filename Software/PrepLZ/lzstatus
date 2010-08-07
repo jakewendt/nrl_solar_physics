@@ -1,0 +1,16 @@
+LZ PROCESS						UPTO...
+
+make_index						030731
+lz_disk_init3					030719
+unpack_lz_science(preplz)		030719
+cat_img							030718
+reduce_main, 2					030718
+rsync2seal						030718
+rsyncjpl						030415
+rsyncjplother		last run - 	030730
+reduce_daily, '','',/lz			030715
+make_all_months, 'c2', '', ''	030715
+make_all_months, 'c3', '', ''	030715
+make_daily_mvi_all, '', '', /do_mpg, /lz, /png
+								030715
+make_diff_mpeg, '', '', /png	030715

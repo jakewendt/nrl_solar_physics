@@ -1,0 +1,151 @@
+#! /bin/perl
+
+# Mail parser CGI-bin script for a nice way to read mail
+# Created: 14 Jan 1999 - D. Wang
+
+########################
+# START of CONFIGURATION
+########################
+
+# title
+$title_desc="STEREO Data Processing Mail";
+
+# this is for the HREF relative to cgi-bin
+$www_dir="mail_archive/stereodp_mail";
+
+# this is for the HREF relative to cgi-bin
+$href="http://stereo.nrl.navy.mil/$www_dir";
+
+#this is the directory where the individual mail gets written
+$full_dir="/export/home/apache/share/htdocs/STEREO/$www_dir";
+
+#this is the mail file to parse
+$mail_input="</var/mail/stereodp";
+
+#######################
+# END OF CONFIGURATION
+#######################
+
+#######################
+# MAIN PROGRAM
+#######################
+&mail_text;
+
+#######################
+# Start of subroutines
+#######################
+sub mail_text 
+ {
+   $start = 0;
+   $msg_num = 0;
+   $flag = 1;
+   open(MAIL,$mail_input) || die "Cannot find mail file - $mail_input\n" ;
+   while ( $line = <MAIL> )
+    { chop($line);
+      $first = $line;
+      # look for start of mail header
+      if ($first =~ /From /) { $start = 1; $subject="(NONE)"; $from=""; $date=""; }
+      $first = $line;
+      $first =~ s/:\s.*/:/ ;
+      #print $first; print "\n";
+      if ( $first eq "Date:"  && $start <= 15) 
+       { $start = $start + 2; 
+         $msg_num = $msg_num + 1; 
+         $date = $line;
+         $date =~ s/Date: //;
+         $date =~ s/:\d\d\s\-0500 \(EST\)//;
+         #print "Date: "; print $date; print "\n";
+       }
+      if ( $first eq "From:"  && $start <= 15) 
+       { $start = $start + 4; 
+         $from = $line;
+         $from =~ s/From: //;
+         #print "From: "; print $from; print "\n"; 
+       }
+
+      if ( $first eq "Subject:"  && $start <= 15)
+       { $start = $start + 8;
+         $subject = $line;
+         $subject =~ s/Subject: //;
+         #print "Subject: "; print $subject; print "\n";
+       }
+
+      if ( $first eq "Content-Length:" && ($start == 15 || $start == 7) )
+       { # if there is no subject
+         if ( $start == 7) { $start = $start + 8; }
+
+         $start = $start + 16; 
+         $len =  $line; 
+         $len =~ s/Content-Length:.//;
+         #print $len;
+         #print "\n";
+         # look for body of mail 
+         #seek(MAIL,10,1); # skip over (message)
+         read(MAIL,$msg,$len);
+         $msg =~ s/\(message\)//;
+         $msg =~ s/\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-+//g;
+         #print $msg; print "\n";
+       }
+      # time to write the msg ?
+      if ($start == 31)
+       { # add to summary
+         &mail_list_html($flag,$msg_num,$from,$date,$subject);
+         $flag = 2;
+         # add to archive
+         &mail_html($msg_num,$from,$date,$subject,$msg);
+         $start = 0;
+       }
+    }
+   close(MAIL);
+   $flag = 3;
+   &mail_list_html($flag,$msg_num,$from,$date,$subject);
+ }
+
+sub mail_list_html
+ { if ($_[0] == 1 )
+    { #open(MAIL_SUM,">mail_list.html") || die "Cannot open mail_list.html";  
+      print "Content-type: text/html\n\n";
+      print "<html>\n";
+      print "<head>\n";
+      print "<title>$title_desc</title>\n";
+      print "</head>\n";
+      print "<body bgcolor=\"#F7F7F7\">\n";
+
+      print "<TABLE BORDER>\n";
+      print "<CAPTION><h1>$title_desc</h1></CAPTION>\n";
+      print "<TR><TH Align=left><TH>From<TH>Date<TH>Subject\n";
+    }
+   if ( $_[0] <= 2) 
+    { 
+      print "<TR><TD>$_[1]<TD>$_[2]<TD>$_[3]<TD>"; 
+      print "<A HREF=\"$href/$_[1].html\">"; 
+      print "$_[4]</A>\n"; 
+    }
+   if ( $_[0] == 3) 
+    { 
+      print "</table>";
+      print "</body>\n";
+      print "</html>";
+      #close(MAIL_SUM); 
+    }
+ }
+
+sub mail_html
+ { 
+   open(MAIL_BODY,">$full_dir/$_[0].html") || die "Cannot open $full_dir/$_[0].html";  
+      print MAIL_BODY "<html>\n";
+      print MAIL_BODY "<head>\n";
+      print MAIL_BODY "<title> STEREO Mail </title>\n";
+      print MAIL_BODY "</head>\n";
+
+      print MAIL_BODY "<h1> STEREO MAIL </h1>\n";
+      print MAIL_BODY "<P>\n";
+      print MAIL_BODY "Date: $_[2]<p>\n";
+      print MAIL_BODY "From: $_[1]<p>\n";
+      print MAIL_BODY "Subject: $_[3]<p><hr>\n";
+      print MAIL_BODY "<PRE>\n";
+      print MAIL_BODY "$_[4]\n";
+      print MAIL_BODY "</PRE>\n";
+      print MAIL_BODY "</html>";
+   close(MAIL_BODY); 
+ }

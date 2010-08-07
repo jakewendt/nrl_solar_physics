@@ -1,0 +1,85 @@
+#! /bin/sh -v
+#
+#	begin script RsyncData
+#
+#	author:		Jake
+#
+#	born on:	011201
+#
+#	purpose:	to backup data
+#
+
+rsync -avzL \
+	--exclude="Software/CDMaker/CDSOURCE" \
+	--exclude="Software/CDMaker/CDIMAGES" \
+	--exclude="idlin" --exclude="idlout" \
+	--exclude="Software/RawLZCD/CDSOURCE" \
+	--exclude="Software/RawLZCD/CDIMAGES" \
+	--exclude="Software/RawLZCD/SOCDRAW" \
+	--exclude="Software/RawLZCD/download" \
+	--exclude="net.corona" \
+	--exclude="bin/office52" \
+	/home/reduce/Documentation/ /net/xi/pub/reduce/Documentation/
+
+rsync -avzL --delete \
+	--exclude="Software/CDMaker/CDSOURCE" \
+	--exclude="Software/CDMaker/CDIMAGES" \
+	--exclude="idlin" --exclude="idlout" \
+	--exclude="Software/RawLZCD/CDSOURCE" \
+	--exclude="Software/RawLZCD/CDIMAGES" \
+	--exclude="Software/RawLZCD/SOCDRAW" \
+	--exclude="Software/RawLZCD/download" \
+	--exclude="net.corona" \
+	--exclude="bin/office52" \
+	/home/reduce/Documentation/ /net/cedar/pub/cig/Documentation/
+
+
+rsync -avz --delete \
+	--exclude=".jpi_cache" \
+	--exclude=".netscape/cache" \
+	--exclude=".netscape/lock" \
+	--exclude=".mozilla" --exclude="CDMaker/CDSOURCE" \
+	--exclude="CDMaker/CDIMAGES" \
+	--exclude="RawLZCD/CDSOURCE" \
+	--exclude="RawLZCD/CDIMAGES" \
+	--exclude="idlin*" --exclude="idlout*" \
+	--exclude="bin/office52" \
+	--exclude=".bin/office52" \
+	--exclude="notrsyncd" \
+	--exclude=".trash" \
+	--exclude=".DCOP*" \
+	--exclude="project" \
+	--exclude="calroc2003" \
+	--exclude="gcc-3.3" \
+	/home/reduce/ /net/xi/pub/reduce/rsync-backup/
+
+rsync -rtvzL \
+	--exclude=".jpi_cache" \
+	--exclude=".netscape/cache" \
+	--exclude=".netscape/lock" \
+	--exclude=".mozilla" --exclude="CDMaker/CDSOURCE" \
+	--exclude="CDMaker/CDIMAGES" \
+	--exclude="RawLZCD/CDSOURCE" \
+	--exclude="RawLZCD/CDIMAGES" \
+	--exclude="RawLZCD/download" --exclude="RawLZCD/SOCDRAW" \
+	--exclude="Documentation/net.corona" \
+	--exclude="idlin*" --exclude="idlout*" \
+	--exclude="bin/office52" \
+	--exclude=".bin/office52" \
+	--exclude="notrsyncd" \
+	--exclude=".trash" \
+	--exclude=".DCOP*" \
+	--exclude="javagif" \
+	--exclude="eclipse01" \
+	--exclude="tech" \
+	--exclude="cnsrtm01" \
+	--exclude="cgi-bin" \
+	--exclude="calroc2003" \
+	--exclude="project" \
+	--exclude="public_html" \
+	--exclude="gcc-3.3" \
+	/home/reduce/ /net/solardata/sd7/reduce/rsync-backup/
+
+#
+#	end RsyncData script
+#

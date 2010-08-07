@@ -1,0 +1,8 @@
+#
+#	030428 by jake
+#
+
+#cat /net/ares/export/home/ares/majordomo/majordomo-1.94.4/lists/stereo3d | awk -F\@ '{print $1":"$1"@"$2}' > mail-stereo3d.list
+
+cat /net/ares/export/home/ares/majordomo/majordomo-1.94.4/lists/stereo3d | awk -F\< '{print $1":"$2}' | awk -F\> '{print $1}' > mail-stereo3d.list
+

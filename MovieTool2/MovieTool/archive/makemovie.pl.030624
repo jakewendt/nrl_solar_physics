@@ -1,0 +1,116 @@
+#!/usr/bin/perl -w
+#
+#
+
+
+$wwwroot="/export/home/apache/share/htdocs/lasco-www";
+$OUTROOT="$wwwroot/MovieTool";
+$ROOT="/export/home/apache/share/cgi-bin/MovieTool";
+$FTPDIR="/net/louis14/data/ftp/pub/outgoing/movie/";
+$FTPURL="ftp://louis14.nrl.navy.mil/pub/outgoing/movie/";
+ 
+my ($sec, $min, $hour, $day, $mon, $year, $wday, $yday, $isdst) = localtime;
+$DATE = sprintf ( "%4d%02d%02d%s%02d%02d%02d", $year+1900, $mon+1, $day, '.', $hour, $min, $sec );
+$OUTDIR="$OUTROOT/$DATE.$$"
+
+
+
+#
+# Interpret CGI
+#
+use File::Copy;
+use CGI;  # load CGI routines 
+$q = new CGI;  # create new CGI object 
+print $q->header('text/html');
+
+@Imagelist = $q->param('image');				#	read params into array
+print join ("<BR>\n", @Imagelist),"<BR>\n";		#	print entire array
+
+
+mkdir "$OUTDIR", 0755
+	or die "Cannot create $OUTDIR : $!";
+chdir "$OUTROOT"
+	or die "Cannot chdir $OUTROOT : $!";
+
+foreach ( @Imagelist ) {
+	copy ( $_,  "$OUTDIR" )
+		or die "Can't copy $_ to $OUTDIR : $!";
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+#	
+#	@sorted = sort by_image_date @Imagelist;
+#	print "<BR>\nAfter Sort\n<BR>";
+#	print join ("<BR>\n", @sorted),"<BR>\n";		#	print entire array
+#	
+#	open OUTPUTLIST, "> /tmp/filelist.$$";
+#	print OUTPUTLIST join ("\n", @sorted),"\n";		#	print entire array
+#	close OUTPUTLIST;
+#	
+
+
+
+
+
+
+
+
+
+
+
+
+
+$OUTTYPE = $q->param('outtype');				#	read param
+
+if ( $OUTTYPE eq "JS" ) {
+	print "<BODY OnLoad=Start('http://lasco-www.nrl.navy.mil/cgi-bin/MovieTool/jsmovie.pl\?dir=$OUTDIR\&size=$OUTSIZE');>\n";
+} elsif ( $OUTTYPE eq "JAVA" ) {
+	print "<BODY OnLoad=Start('http://lasco-www.nrl.navy.mil/cgi-bin/MovieTool/jmeasure.pl\?dir=$OUTDIR\&size=$OUTSIZE');>\n";
+} elsif ( $OUTTYPE eq "AGIF" || $OUTTYPE eq "AGIFL" ) {
+	print "<BODY OnLoad=Start('$FTPURL/$DATE.$$.gif');>\n";
+} elsif ( $OUTTYPE eq "MPG1" ) {
+	print "<BODY OnLoad=Start('$FTPURL/$DATE.$$.mpg');>\n";
+} else  {
+	print "<BODY>\n";
+}
+
+
+
+
+
+#	do processing
+
+
+
+
+
+print $q->end_html; # end the HTML
+
+
+
+
+
+
+
+
+
+
+
+
+sub by_image_date {
+	@aa = split /\//, $a;
+	@bb = split /\//, $b;
+	$aa[-1] cmp $bb[-1];
+}
+
+

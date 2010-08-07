@@ -1,0 +1,120 @@
+<html>
+<head>
+<title>Making CDs</title>
+</head>
+<body>
+
+<table width="100%" height="100%" >
+<tr><td VALIGN="TOP">
+<h3 align="CENTER" >Making CDs</h3>
+
+<p>Running the following command covers almost the entire process.
+
+<p align="center">cd $CDMAKER
+
+<p align="center">MakeCDImages
+
+<p>It first calls BuildCDList which reads the appropriate .log file from
+$CDMAKER/CDLOGS directory to determine where to start.  It then adds in
+directories and files until the size surpasses the `jget CDMAX`.
+
+<p>CopyCDFiles then links/copies all the files in the list and any special files
+associated with those dates (ie. img_hdr.txt files) and any special files
+associated with lz data.  In addition, it generates the ReadMe.txt file, the
+autorun.inf, copies the CD Icon and generates the HTML code.
+
+<p>CreateImage then creates the CD ISO file.
+
+<p>The ISO is then jpush'd (ftp'd) to urania.  If for some reason this fails, the
+local copy of the ISO is NOT removed, but the CD making process continues.
+
+<p>After this process is complete, the program searches to see if it can make another.
+
+<p>This process continues until there is no space left on the ISO directory or until it is caught up.
+
+<p>If, for some reason, an ISO needs to be recreated, use the command RemakeCDISO [ql 1204].  
+The CD list and CD status file should be placed in the appropriate directory before doing this.
+
+<p>Using the CD Duplicator / Printer
+
+
+<p>From urania, the printable image needs to be generated for the top of the CD
+using PaintShop Pro and the current template (C:\LASCO\PSP\LASCO-CD.psp).  Once the image is made and
+printed to a file for all ISOs, the Primo CD software is used to automate the
+burn process.
+
+
+<ul>
+	<li>Primo CD Pro (Used for the actual burning of CDs)
+
+	<li>Cedar CDFace (Can be used to make simple CD images)
+
+	<li>Paint Shop Pro 7 (Used to make the LASCO and EIT CD images)
+</ul>
+
+<p>After a CD is burnt, it should be inserted into hercules or even a jukebox
+given the proper modifications are made to the software.  If the CD is going
+into a Jukebox then:
+
+<p align="CENTER">InsertCD lz 0703
+
+<p align="CENTER">InsertCD lz 0704
+
+<p align="CENTER">...
+
+<p>InsertCD will probably need modified so that the CD goes to the proper slot
+since the Jukeboxes are essentially full.  After all the CDs are inserted then run:
+
+<p align="CENTER">MountAll
+
+<p>This runs and archives the scripts generated from InsertCD.
+
+<p>After this is complete or if the CD is to be checked locally then:
+(this script may also need slight modification due to the location of the CD)
+
+<p align="CENTER">VerifyCDFiles lz 0703
+
+<p>This copies all the jpgs to make sure that they all can be read and reads all
+the fits file headers.  It also compares the directory listing of the CD to
+the expected file list.
+
+<p>If the CD is to be left in a Jukebox and you are ready to link the CD then:
+
+<p align="CENTER">LinkCDFiles lz 0703
+
+<p>This will check the local files, remove them and put a link in their place.
+
+<p>After the CD has been verified, the CD Volume needs to be copied, labeled and
+distributed to the co-invesitgators.
+
+<p>The QuickLook CDs are not distributed.  Only one CD is made from this data and
+it is simply for archival purposes.
+
+<p>Three(3) EIT CDs are produced.  One for the archives, one potentially for the
+Jukebox, and one for distribution to LAS.
+
+<p>Five(5) LZ CDs are produced.  One for the archives, one potentially for the
+Jukebox, and three for distibution to LAS, MPAe, and DSR.
+
+<ul>
+	<li><a href="BuildCDList" target="main_frame">BuildCDList</a>
+	<li><a href="CopyCDFiles" target="main_frame">CopyCDFiles</a>
+	<li><a href="CreateImage" target="main_frame">CreateImage</a>
+	<li><a href="InsertCD" target="main_frame">InsertCD</a>
+	<li><a href="LinkCDFiles" target="main_frame">LinkCDFiles</a>
+	<li><a href="MakeCDImages" target="main_frame">MakeCDImages</a>
+	<li><a href="MountAll" target="main_frame">MountAll</a>
+	<li><a href="RemoveQLCD" target="main_frame">RemoveQLCD</a>
+	<li><a href="VerifyCDFiles" target="main_frame">VerifyCDFiles</a>
+	<li><a href="WriteAutoRun" target="main_frame">WriteAutoRun</a>
+	<li><a href="WriteIndexHTML" target="main_frame">WriteIndexHTML</a>
+	<li><a href="WriteReadme" target="main_frame">WriteReadme</a>
+	<li><a href="ql.log" target="main_frame">ql.log</a>
+	<li><a href="lz.log" target="main_frame">lz.log</a>
+	<li><a href="eit.log" target="main_frame">eit.log</a>
+</ul>
+
+</td></tr>
+</table>
+</body>
+</html>

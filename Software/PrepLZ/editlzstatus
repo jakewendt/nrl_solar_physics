@@ -1,0 +1,1 @@
+/usr/dt/bin/dtterm -geometry 50x18+0+0 -e vi lzstatus &

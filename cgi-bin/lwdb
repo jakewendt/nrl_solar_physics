@@ -1,0 +1,1536 @@
+#!/net/louis14/usr/local/bin/perl
+$CONFIG_DIR = '/net/louis14/data4/httpd/wdb';
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.IDENTIFICATION  wdb
+#.LANGUAGE	  OraPerl script
+#
+#.PURPOSE	  WWW Database Interface.
+#
+#.AUTHOR	  Bo Frese Rasmussen [ST-ECF]   <bfr@dtv.dk>
+#
+#.VERSION	1.0	14/06-1994	Creation
+#.VERSION	1.1	11/10-1994	The following bugs where fixed :
+#					Query on 0 was ignored.
+#					Range query (..) f...ed up subsequent
+#					queries in the same form.
+#					Range queries on datatime fields didn't
+#					work.
+#					
+#					Dateformat config. option added.
+#
+#.VERSION	1.2	30/12-1994	Support for spec. null values added.
+#					'add_menu' function to allow extra menu
+#					options to be added from fdf.
+#					Fixed bug with continuation lines for
+#					field attributes.
+#					
+#.VERSION	1.3a1	03/03-1995     'sameline' field attribute
+#				       added.
+#				       'html' field attribute added.
+#				       Perl5 compatible.
+#				       Query on computed fields. 
+#				       Uses single quotes rather than
+#				       double quotes around strings.
+#
+# Ed Esfandiari, May 1997: Use "date_obs" as the column name when evaluating 
+#                          the where clause and expand a single date without 
+#                          an operator to a full day range:
+#
+# Ed Esfandiari, Aug 1997: Added Search and Reset buttons (as well as the Help
+#                          and Home) at the end of the fields display menu.
+#	                   Also disabled the hyperlinks for JPG and Filename 
+#                          fields of the header-only rows for HTML3.
+#
+# Ed Esfandiari, Aug 1998: Added code to allow direct download of one or
+#                          more of the returned .fts files. 
+# 
+# Ed Esfandiari, Sep 1998: Added code so that only "images" (images.fdf) form
+#                          will be used for download (not CD_ROM forms).
+#
+# Ed Esfandiari, Sep 30,1998: Added download capability for the new img_daily
+#                          table. Also forced using html3 constructs for all
+#                          browser versions since for netscape 4+, for instance,
+#                          the output format did not look nice.
+#
+# Ed Esfandiari, Sep 23, 1999: Added "Filename MUST remain checked if planning to 
+#                                     download files." comment.
+#
+# Ed Esfandiari, Oct 21, 1999: Added "Query Tips" icon.
+#
+# Ed Esfandiari, Oct 30, 2001: Made the "Date Obs" a requirement for a query to be processed.
+#
+# Ed Esfandiari, Jan 25, 2002: Added code to make the "more" option work. It now ignores the
+#                              date_obs check if the wherelist is generated for the "more"
+#                              (does not have date_obs in it) in order to view in full-screen.
+#
+# Ed Esfandiari, Mar 03, 2003: Added code to handle solwind transient and solwind_hdr tables.
+#
+# Ed Esfandiari, Mar 21, 2003: Added code so that queries for cdrom forms that don't have date_obs 
+#                              field (cdrom_file_find.fdf, cdrom_files.fdf, cdrom_info.fdf) are not
+#                              stopped and asked to provide a date_obs.
+#
+# Ed Esfandiari, Apr 23, 2003: Added code to also handle solwind_hdr_dup table.
+#	
+#.COPYRIGHT (see end of file)
+#------------------------------------------------------------------------------
+$version       = "wdb 1.4";
+$rel_date      = "5-Mar-96";
+$short_version = "w1.4";
+
+#-------------------------------------------------------
+# Prepare STDOUT and STDERR
+#-------------------------------------------------------
+open(STDERR,">&STDOUT") || die "Can't dup stdout: $!\n";
+select(STDERR); $| = 1; # Make unbuffered.
+select(STDOUT); $| = 1; # Make unbuffered.
+
+print "Content-type: text/html\n\n"; 
+
+#-------------------------------------------------------
+# Get local configuration parameters.
+#-------------------------------------------------------
+$IC_UPPER = 1;   # TEST: Ignore Case using UPPER()
+
+#print "conf_dir $CONFIG_DIR\n";
+if ( -f "$CONFIG_DIR/lwdb.conf" ) {
+ do "$CONFIG_DIR/lwdb.conf" || die "Error reading configuration file
+    $CONFIG_DIR/lwdb.conf: $@\n";
+} else {
+    die "Configuration file '$CONFIG_DIR/lwdb.conf' not found ?\n";
+}
+
+#-------------------------------------------------------
+# Include perl libraries
+#-------------------------------------------------------
+require	"cgi-lib.pl";
+
+#------------------------------
+# Parse info from Web Client
+#------------------------------
+
+#print "PATH_INFO: $ENV{'PATH_INFO'}\n";
+
+( $void , $dbdir, $formname, $action, $key_args ) = split( '/', $ENV{'PATH_INFO'}, 5 );
+
+#print "variables: $void , $dbdir, $formname, $action, $key_args\n";
+
+$WDB = ( $ENV{'SCRIPT_NAME'} ) ? $ENV{'SCRIPT_NAME'} : "/cgi-bin/wdb";
+
+#------------------------
+# Use HTML3 Constructs ?
+#------------------------
+
+if ( defined @HTML3_BROWSERS ) {
+    foreach $browser ( @HTML3_BROWSERS ) {
+	if ( $ENV{'HTTP_USER_AGENT'} =~ /$browser/ ) {
+	    $html3browser = 1;
+	    break;
+	}
+#       AEE sep 30, 98 - Forced using html3 constructs (added following line) 
+#       for all browser versions since for netscape 4+, for instance, the output
+#       format did not look nice.
+        $html3browser = 1;  
+    }
+}
+
+#-------------------------------------------------------------------------
+# DEBUG stuff...
+# If your are making changes to the wdb script you might find it usefull
+# to have a test/development version and an installed version. Set the
+# variable $debug in your configuration file.
+# This will enable some extra debug output to be printed in the HTML
+# pages and in a debug file. If you are making changes to wdb, please
+# let me know.
+#-------------------------------------------------------------------------
+if ( $debug ) {
+    if ( $action eq "form" ) { 
+	open(DEBUG,"> $debugfile");
+	printf DEBUG "*** $version : $dbdir / $formname ".`date`." ***\n\n";
+    } else {
+	open(DEBUG,">> $debugfile");
+    }
+    select(DEBUG); $| = 1; # Make unbuffered.
+    select(STDOUT);
+
+    foreach $env ( sort keys(%ENV) ) {
+	printf DEBUG "$env = $ENV{$env}\n";
+    }
+}
+
+#---------------------
+# Main() ...
+#---------------------
+&ReadParse;	
+&ParseFile("$formdir/$dbdir/$formname.fdf");
+if ( $action eq "form" ) {
+    &PrintForm;
+} elsif ( $action eq "query" || $action eq "default") {
+    &DoQuery;
+}else {
+    print $helptext;
+    print "Unknown action in PATH_INFO\n";
+#    print "PATH_INFO= ",$PATH_INFO,"\n";
+    exit 2;
+}
+exit 1;
+
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Parse a form definition file ('fdf' file)
+#
+#.REMARKS
+#
+#.RETURNS	True, or not at all ....
+#------------------------------------------------------------------------------
+sub ParseFile 
+{
+    local( $file ) = @_;
+
+    open( FDF, $file ) || die "Can't open $file: $!\n";
+
+    $lineno = 0;
+    while ( <FDF> ) {	  
+	$lineno++;
+
+	#-----------------------------------------------------------------
+	# Parse a line of the form : "key=value". Comments and unnessesary
+	# blanks are skipped. (blanks in the middel of values are kept!)
+	# The key should start at the 1. character on the line - lines 
+	# starting with whitespace are interpreted as continuation lines.
+	#-----------------------------------------------------------------
+	next if /^#.*$/;
+	($key, $void, $val ) = 
+		/^(\w+)\s*(=\s*((\s*\".*\"|\s*[^#\s\n]+)+))?\s*(#.*)?$/;
+		# /^(\w+)\s*(=\s*((\s*[^#\"\s\n]+|\s*\".*\")+))?\s*(#.*)?$/;
+
+	if ( ! $key ) {   # Continuation line ...
+	    ($val) = /^\s*((\s*[^#\s\n]+)+)\s*(#.*)?$/;
+	    next unless $val;
+	    if ( $old_attr_type eq 'form' ) {
+		$form{$old_attr_key} .= "\n$val";
+	    } else {
+		$field{$old_attr_key} .= "\n$val";
+	    }
+	    next;
+	}
+
+	#--------------------------------------------------
+	# Begining of a new FIELD definition ?
+	#--------------------------------------------------
+	if ( $key eq "FIELD" ) {
+	    if ( $current ) {	# If not first field, check old field
+		if ( ! $field{$current,'label'} ) {
+		    $field{$current,'label'} = $current;
+		}
+	    }
+	    $current = $val;
+	    push( @fields, $val );
+	    next;
+	}
+
+	#--------------------------
+	# Is it a FORM attribute ?
+	#--------------------------
+	if ( ! $current ) {	  # Defs' before first field are form defs'
+	    $form{$key} = $val;	
+	    $old_attr_key = $key;
+	    $old_attr_type = 'form';
+	    next;
+	}
+
+	#--------------------------
+	# It's a FIELD attribute.
+	#--------------------------
+
+	if ( $key eq "key" ) {
+	    unshift( @keys, $current);
+	} else {
+            #### CHANGED for Perl5 ###
+            $val = 'TRUE' unless defined $val;
+            ####
+	    $field{$current,$key} = $val;
+	    $old_attr_key   = "$current$;$key";
+	    $old_attr_type  = 'field';
+	}
+    }
+    # Now check last field....
+    if ( $current ) {	
+	if ( ! $field{$current,'label'} ) {
+	    $field{$current,'label'} = $current;
+	}
+    }
+
+    #--------------------------------------------------------
+    # If a 'PERL' attribute exists in the form : Evaluate it
+    #--------------------------------------------------------
+    if ( $form{'PERL'} ) {
+	eval $form{'PERL'};
+	if ( $@ ) {
+	    print "Error in the forms PERL attribute :<p>\n $@\n";
+	    die "Exiting...\n";
+	}
+    }
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Print an HTML query form 
+#
+#.REMARKS
+#
+#.RETURNS	True, or not at all ....
+#------------------------------------------------------------------------------
+sub PrintForm 
+{
+
+    #-----------------------------
+    # Print HTML header stuff
+    #-----------------------------
+    $header = ( $form{'Q_HEADER'} ) ? "$form{'Q_HEADER'}" 
+				    : "$form{'TITLE'} - Query Form";
+    if ( $form{'DOCURL'} ) {
+	$header = "<a href=\"$form{'DOCURL'}\">" . $header . "</a>";
+    }
+
+    print "<HTML><HEAD><TITLE>$form{'TITLE'}</TITLE></HEAD><BODY>\n";
+    print "<H1>$header</h1>\n";
+
+    if ( $form{'Q_HTML'} ) {
+	print "$form{'Q_HTML'}\n";
+    } else {
+     #if ($formname eq "solwind_hdr") {
+     if ($formname eq "solwind_hdr" || $formname eq "solwind_hdr_dup") {
+       print "Please enter qualifiers in the fields below and press the '<b>Search</b>' button.";
+       print "<p><b>Date Obs</b> may be used to narrow the search.";
+       print "<p><b>Filename</b> MUST remain checked if planning to download files.";
+     } else { 
+       if ($formname eq "transient") {
+         print "Please enter qualifiers in the fields below and press the '<b>Search</b>' button.";
+         print "<p>To narrow the search provide a <b>Date and Time</b>.";
+       } else { # other forms such as images, etc.
+         print "Please enter qualifiers in the fields";
+         print " below (<b>Date Obs</b> is required) and press the '<b>Search</b>' button.";
+         print "<p><b>Filename</b> MUST remain checked if planning to download files.";
+       }
+     }
+    }
+    print "<FORM ACTION=\"$WDB/$dbdir/$formname/query\" METHOD=\"POST\">";
+    &write_menu;
+    print "\n<pre>";
+
+
+    #------------------------
+    # Print fields
+    #------------------------
+    $max = 0;
+    foreach $f ( @fields ) {
+       if (   (! defined $field{$f,'no_query'} ) 
+	   && (! defined $field{$f,'hidden'} ) ) {
+	  $max= length($field{$f,'label'}) if length($field{$f,'label'}) > $max;
+       }
+    }
+    $format = "%-" . $max . "s";
+
+    foreach $f ( @fields ) {
+	next if defined $field{$f,'hidden'};
+
+	if ( defined $field{$f,'no_query'} ) {
+	    if ( ! defined $field{$f,'no_tab'}
+	      && ! defined $field{$f,'hidden'} 
+	      && ! defined $field{$f,'forcetab'} ) { 
+		push( @extrafields, $f );
+	    }
+	    next;
+	}
+	print "\n" if ( $notfirstfield++ && ! defined $field{$f,'sameline'} );
+	print &eval_attr( $f,'html') if defined $field{$f,'html'};
+
+	#---------------------------------
+	# Checkbox : In tabular output ? 
+	#---------------------------------
+	print "<INPUT type=checkbox ";
+	print "checked" if ! defined $field{$f,'no_tab'};
+	print " name=tab_$f><b>";
+	#---------------------------------
+	# Label
+	#---------------------------------
+	if ( $field{$f,'help'} ) {
+	    print DEBUG "help field : $field{$f,'help'}\n" if $debug;
+	    $help = &eval_attr( $f,'help');
+	    print DEBUG "help : $help\n" if $debug;
+	    print "<a href=\"";
+	    print $form{'DOCURL'} if ( $help =~ /^#.*/ );
+	    print $help . "\">";
+	    print $field{$f,'label'};
+	    print "</a>";
+	} else {
+	    print $field{$f,'label'};
+	}
+
+	if ( ! defined $field{$f,'sameline'} ) {
+	    print "." x ($max - length($field{$f,'label'})) ;
+	    print " :";
+	}
+	print "</b>";
+
+	#--------------------------------------------------
+	# Query field : Selection box or Text input field.
+	#--------------------------------------------------
+	if ( $field{$f,'enum'} ) {
+	    print DEBUG "ENUM field $f = $field{$f,'enum'}\n" if $debug;
+	    print "<SELECT name=\"$f\""; 
+	    print " MULTIPLE SIZE=3" if ( defined $field{$f,'multiple'} ) ;
+	    print ">" ;
+	    foreach ( split(',',$field{$f,'enum'}) ) {
+		( $value, $title ) = /^\s*(.*)=(.*)$/;
+		next if $value eq '%' && defined $field{$f,'multiple'};
+		print "<OPTION value=\"$value\"> $title\n";
+	        print DEBUG "- value= $value : title= $title\n" if $debug;
+	    }
+	    print "</SELECT>";
+	} else {
+	    if ( $field{$f,'length'} > (55-$max) ) {
+		$length = (55-$max) ;
+	    } else {
+		$length = $field{$f,'length'};
+	    }
+	    if ( $field{$f,'default'} ) {
+		$default = eval $field{$f,'default'};
+		if ( $@ ) {
+		    print "Error in $f"."'s  'default' attribute :<p>\n $@\n";
+		    die "Exiting...\n";
+		}
+	    } else {
+		$default = "";
+	    }
+	    print " <INPUT name=\"$f\" size=$length value=\"$default\" >";
+	}
+	#-------------
+	# Unit label
+	#-------------
+	print " $field{$f,'unitlabel'}" if ( $field{$f,'unitlabel'} );
+    }
+
+    #------------------------------
+    # Print the rest of the page.
+    #------------------------------
+    print "</pre> ";
+    if ( @extrafields ) {
+	print "<a href=\"$WDB_HTML/wdb_query_help.html#ctrl\">";
+	print "Extra columns on tabular output</a> : ";
+	print "<SELECT name=\"extra_columns\" size=8 multiple>\n";
+	foreach $ef ( @extrafields ) {
+	    print "<option value=$ef> $field{$ef,'label'}\n";
+	}
+	print "</SELECT>\n";
+    }
+    print <<"END_HTML_TRAILER";
+	<hr>
+	<INPUT type=checkbox name=full_screen_mode>
+	Use full-screen output even if more than one row is returned (not downloadable).<br>
+	Return max <INPUT VALUE=$rowcount SIZE=8 NAME=max_rows_returned>
+	rows.
+        <br><br>
+        <hr> 
+	<INPUT TYPE=\"submit\" VALUE=\"Search\">
+	<INPUT TYPE=\"reset\" VALUE=\"Reset\">
+	<A HREF=\"$QUERY_HELP\">
+	<img border=0 align=absmiddle alt=\"[Help]\" src=\"$IMAGEDIR/help_btn.gif\"></A>
+	<a href=\"$MAIN_MENU\">
+	<img border=0 align=absmiddle alt=\"[Home]\" src=\"$IMAGEDIR/home_btn.gif\"></A>
+	</FORM>
+END_HTML_TRAILER
+#    print "<FORM ACTION=\"$WDB/$dbdir/$formname/query\" METHOD=\"POST\">";
+#    &write_menu;
+    &html_tail;
+    print "</BODY></HTML>";
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Retrieve a query, execute it, and print the result.
+#
+#.REMARKS
+#
+#.RETURNS	  
+#------------------------------------------------------------------------------
+sub DoQuery 
+{
+    # Timeout not implemented yet.
+    #$SIG{'SIGALARM'} = 'timeout';
+    #$SIG{'SIGIO'} = 'timeout';
+
+    #--------------------------
+    # Load database interface.
+    #--------------------------
+    if ( -f "$CONFIG_DIR/$DBI_FILE" ) {
+     do "$CONFIG_DIR/$DBI_FILE" ||
+	 die "Error loading database interface file $CONFIG_DIR/$DBI_FILE :\n$@\n";
+    } else {
+	die "Database interface file '$CONFIG_DIR/$DBI_FILE' not found ?\n";
+    }
+
+    #--------------------------
+    # Print HTML Header stuff.
+    #--------------------------
+
+    if ( $action eq "query" ) {
+	$header = ( $form{'R_HEADER'} ) ? "$form{'R_HEADER'}" 
+				    : "$form{'TITLE'} - Query Result";
+    } else {
+	$header = ( $form{'D_HEADER'} ) ? "$form{'D_HEADER'}" 
+				    : "$form{'TITLE'} - Default List";
+    }
+    if ( $form{'DOCURL'} ) {
+	$header = "<a href=\"$form{'DOCURL'}\">" . $header . "</a>";
+    }
+
+    print "<HTML><HEAD><TITLE>$form{'TITLE'}</TITLE></HEAD><BODY>\n";
+    #print "<TITLE>$form{'TITLE'}</TITLE>\n";
+    print "<H1>$header</H1>\n";
+    if ( $action eq "query" ) {
+	print "$form{'R_HTML'}\n" if ( $form{'R_HTML'} );
+    } else { # ($action eq "default")
+	if ( $form{'D_HTML'} ) {
+	    print "$form{'D_HTML'}\n";
+	} else {
+	    print "<H4>Press the 'Query' button to change qualifications.</h4>\n";
+	}
+    }
+    &write_menu;
+
+    #----------------------------------------------------------
+    # Get qualification either from the form or from the path
+    #----------------------------------------------------------
+    if ( ! $key_args ) {
+	#&ReadParse;	
+    } else {
+	foreach $keyval ( split( '::', $key_args ) ) {
+	    $in{pop(@keys)} = $keyval;
+	}
+    }
+
+    #--------------------------------------------------
+    # Compose select and where list for the SQL select
+    #--------------------------------------------------
+    foreach $f ( @fields ) {
+	print DEBUG "Processing $f ...\n" if $debug;
+	if ( defined &dbi_fieldnames ) {
+	    unless ( defined $field{$f,'computed'} ) {
+		    push( @select, ( $field{$f,'column'} ) 
+				    ?  $field{$f,'column'} : $f ); 
+		    push( @select_fields, "$f" );
+	    }
+	} else {
+	    push( @select, "$field{$f,'column'} $f" ) 
+		    unless defined $field{$f,'computed'};
+	}
+
+	if ( $field{$f,'column'} ) {
+	    $col = $field{$f,'column'};
+	} else {
+	    $col = $f;
+	}
+
+	if ( $action eq "default" ) { 
+	    if ( $field{$f,'default'} && ! $in{$f} ) {
+		$in{$f} = &SGMLtoASCII( &eval_attr($f,'default',0) );
+	    }
+	}
+
+	if ( defined $in{$f} && $in{$f} ne "" ) {
+	  next if $in{$f} eq '%';       # Ignore '%' fields (from enum fields)
+
+	  if ( defined $field{$f,'computed'} ) { 
+	      print DEBUG "Evaluating computed field : $f = $in{$f}\n" if $debug;
+	      print DEBUG "- Compute : $field{$f,'to_db'}\n" if $debug;
+	      $ret = &eval_attr($f,'to_db',$in{$f});
+	      print DEBUG " = $ret\n" if $debug;
+	      next;	# Don't query on computed fields.
+	  }
+
+	  print DEBUG "Parsing $f = '$in{$f}'\n" if $debug;
+
+	  # If it's a 'enum' 'multiple' field, change it to an OR query.
+	  if ( defined $field{$f,'multiple'} ) {
+	      $in{$f} =~ s/\\0/ OR /;
+	  }
+
+	  foreach $qual ( split( /\s*\|\s*|\s+OR\s+|\s+or\s+/, $in{$f} ) ) {
+
+	    print DEBUG "      qual = '$qual'\n" if $debug;
+	    ( $oper, $val ) = $qual =~ /^\s*(<=|>=|!=|<|>|==|=|~)?(.*)$/;
+
+	    undef $val2;
+	    ( $val1, $val2 ) = split( /\.\./,$qual,2 ) unless $oper;            
+
+#           Ed Esfandiari, May 1997: Added the following if statement to use
+#           "date_obs" as the column name when evaluating the where clause
+#           and expand a single date without an operator to a full day range:
+        
+            if (index($col,"date_obs") > -1 || index($col,"date_time") > -1) {
+                if ($formname eq "images" || $formname eq "img_cdrom") {
+                  $col= "img_leb_hdr.date_obs";
+                }
+                if ($formname eq "daily_images") {
+                  $col= "img_daily.date_obs";
+                }
+                if ($formname eq "transient") {
+                  $col= "transient.date_time";
+                }
+                if ($formname eq "solwind_hdr") {
+                  $col= "solwind_hdr.date_obs";
+                }
+                if ($formname eq "solwind_hdr_dup") {
+                  $col= "solwind_hdr_dup.date_obs";
+                }
+                if ( ! $val2) {
+                  $val2 = sprintf("%s %s",$val1," 23:59:59") unless $oper;
+                } 
+            }
+	    if ( $val2 ) {
+		print DEBUG "   range: '$val1' -> '$val2'\n" if $debug;
+
+		if ( $field{$f,'type'} eq 'char'
+                    || $field{$f,'type'} eq 'datetime' ) {
+		    push( @or_where, "$col between '"
+				     . &eval_attr($f,'to_db',$val1)
+				     . "' and '"
+				     . &eval_attr($f,'to_db',$val2) . "'");
+		} else {
+		    push( @or_where, "$col between ". &eval_attr($f,'to_db',$val1)
+					    . " and " . &eval_attr($f,'to_db',$val2) );
+		}
+	    } elsif ( defined $val ) {
+		$val = &eval_attr($f,'to_db',$val) unless $key_args;
+		if ( ! $oper ) {
+		    $oper = "==" if $key_args;
+		    $oper = "==" if $field{$f,'enum'};
+
+# Ed Esfandiari, May 1998. Added the following statement to check if a selected
+#                enum column contains a % sign. If so, the "=" operator must 
+#                be used ("=" will change to "like" a bit later):
+
+                    $oper = "=" if($field{$f,'enum'} && (index($val,"%") > -1))
+		} 
+
+		if ( $oper ne '==' ) {
+		    $val =~ s/^\s*//;
+		    $val =~ s/\s*$//;
+		}
+		print DEBUG "      val = '$val'\n" if $debug;
+
+		if ( $field{$f,'type'} eq 'char' ) {
+		    $val  =~ s/"/""/g;
+		    $val  =~ s/'/''/g;
+		    if ( ! $oper ) { 	# Default 
+			$oper = "like";
+			if ( $IC_UPPER ) {
+			   $col = "UPPER( $col )";
+			   $val  =~ s/([a-z])/\U$1/g;
+			} else {
+			   $val  =~ s/([a-zA-Z])/[\U$1\L$1]/g;
+			}
+			$val  = "*$val*";
+		    } elsif ( $oper eq "=" ) {
+			$oper = "like";
+		    } elsif ( $oper eq "==" ) {
+			$oper = "=";
+		    } elsif ( $oper eq "~" ) {
+			$oper = "like";
+			if ( $IC_UPPER ) {
+			   $col = "UPPER( $col )";
+			   $val  =~ s/([a-z])/\U$1/g;
+			} else {
+			   $val  =~ s/([a-zA-Z])/[\U$1\L$1]/g;
+			}
+		    }
+		    $val =~ s/\*/%/g if $oper eq "like";
+		    $val =~ s/\?/_/g if $oper eq "like";
+		    push( @or_where, "$col $oper '$val'");
+
+		} elsif ( $field{$f,'type'} eq 'datetime'  ) {
+		    $oper = "like" unless $oper;    # Defaul operand is 'like'
+		    $oper = "=" if $oper eq "==";
+		    $val =~ s/\*/%/g if $oper eq "like";
+		    push( @or_where, "$col $oper '$val'");
+
+		} else {
+		    $oper = "=" unless $oper;       # Defaul operand is '='
+		    $oper = "=" if $oper eq "==";
+		    push( @or_where, "$col $oper $val");
+		}
+	    }
+	  }
+	  print DEBUG "     where = ".join(" OR ",@or_where)."\n" if $debug;
+
+	  if ( @or_where > 1 ) {
+	    push( @where, "(". join(" OR ",@or_where) . ")" );
+	  } else {
+	    push( @where, @or_where );
+	  }
+	  @or_where = ();
+	}
+    }
+    push( @where, $form{'CONSTRAINTS'}) if $form{'CONSTRAINTS'};
+
+    push( @where, $form{'JOIN'}) if $form{'JOIN'};
+
+    $selectlist = join(',',@select);
+
+    $wherelist  = join(' AND ', @where );
+    $wherelist  = "where ".$wherelist if $wherelist;
+
+    $wherelist .= " order by $form{'ORDER'}" if $form{'ORDER'};
+
+#print $wherelist;
+#    if(index($wherelist,"date_obs") eq -1) {
+#     if(index($wherelist,"date_obs") eq -1 && index($wherelist,"where filename") eq -1 && index($wherelist,"date_time") eq -1) {
+     if(index($wherelist,"date_obs") eq -1 && index($wherelist,"where filename") eq -1){
+      #if($formname ne "solwind_hdr" && $formname ne "transient") {
+      # AEE - Mar 21, 03 - added cdrom_file_find, cdrom_files, and cdrom_info to the if statement:
+      #if($formname ne "solwind_hdr" && $formname ne "transient" && $formname ne "cdrom_file_find" && $formname ne "cdrom_files" && $formname ne "cdrom_info") {
+      if($formname ne "solwind_hdr" && $formname ne "solwind_hdr_dup" && $formname ne "transient" && $formname ne "cdrom_file_find" && $formname ne "cdrom_files" && $formname ne "cdrom_info") {
+       # the "where filename is used, automatically, with "more". But "where UPPER(filename)" is 
+       # used in the wherelist if a filename entery was given in the query. So, if "date_obs" was
+       # not present in the wherelist but the "where filename" was, then the wherelist is from
+       # the "more" option and we don't need to quit here with the following message.
+       print "<b>Query Error:</b><br>";
+       print "You did not provide a date. Please go 'Back' to the query form, enter a date or a date-range <br>";
+       print "in the <b>Date Obs</b> field, and re-submit your query.<br>";
+       return;
+      }
+    }
+
+    #-------------------------------
+    # Open database and select data.
+    #-------------------------------
+
+
+    &dbi_connect( $user, $pswd, $server, $form{'DATABASE'} );
+
+    if ( $in{'max_rows_returned'} ) {
+	$rowcount = $in{'max_rows_returned'};
+	$rowcount = $MAXROWCOUNT if $rowcount > $MAXROWCOUNT;
+    }
+    &dbi_rowcount( $rowcount );
+    &dbi_dateformat( $DATEFORMAT ) if ( $DATEFORMAT );
+    &dbi_fieldnames( @select_fields ) if defined &dbi_fieldnames;
+
+    if ( $debug ) {
+	print DEBUG "\n**** QUERY ****\n";
+	print DEBUG "use $form{'DATABASE'}\n";
+	print DEBUG "select $selectlist from $form{'TABLE'}\n";
+	print DEBUG "$wherelist \n\n";
+    }
+    
+    &dbi_dosql( "select $selectlist from $form{'TABLE'} $wherelist");
+
+    #----------------
+    # Print all rows.
+    #----------------
+
+    $numrows=0;
+    if ( ! (%firstrow = &dbi_nextrow ) ) {
+	print "<p><h2>No data returned !</h2>\n";
+	print "Please go 'Back' to the query form and re-specify your query.\n";
+	print "<p><hr>\n";
+	print "<h3>Your Query :</h3>\n";
+	foreach $f ( @fields ) {
+	    if ( defined $in{$f} && $in{$f} ne "" ) {
+		print "<em>$field{$f,'label'}</em> : $in{$f}<br>\n";
+	    }
+	}
+	print "<p><hr>\n";
+	print "<h3>SQL Query used.</h3>\n";
+        print "<em>select .....</em> <br>\n";
+#        print "<em>select</em> $selectlist <br>\n";
+	print "<em>from</em> $form{'TABLE'}<br>\n";
+	print "$wherelist <br>\n";
+	&html_tail;
+	print "</BODY></HTML>";
+	return;
+    }
+    $numrows++;
+
+    $output_mode='full';
+
+    if ( %myrow = &dbi_nextrow  ) {
+	$output_mode='tab' unless $in{'full_screen_mode'};
+
+# Following added by AEE, aug 31, 98:
+
+#  if(($formname eq "images" || $formname eq "daily_images") && $output_mode ne 'full') {
+  #if(($formname eq "images" || $formname eq "daily_images" || $formname eq "solwind_hdr") && $output_mode ne 'full') {
+  if(($formname eq "images" || $formname eq "daily_images" || $formname eq "solwind_hdr" || $formname eq "solwind_hdr_dup") && $output_mode ne 'full') {
+#    print '<FORM ACTION="http://lasco-www.nrl.navy.mil/cgi-bin/download"  METHOD="post">';
+#    print '<FORM ACTION="/cgi-bin/download_test"  METHOD="post">';
+#    print '<FORM ACTION="/cgi-bin/download"  METHOD="post">';
+	print '<FORM ACTION="/cgi-bin/DownloadControl"  METHOD="post">';
+
+	#
+	#	Do not include 'name="Submit"' for Download because
+	#	download.c not coded for Submit variable (Jake 030527)
+	#
+	print '<INPUT type="Submit" value="Download Raw FITS">';
+	print '<B> - OR - </B>';
+	print '<INPUT name="Submit" type="Submit" value="Reduce Images (TESTING)">';
+	print '     ';
+	print '<SELECT name="Options">';
+	print '<OPTION value="file"> Only Marked Files';
+	print '<OPTION value="rest"> All But Marked Files';
+	print '<OPTION value="all"> All Listed Files ';
+	print '</SELECT>';
+	print '    <INPUT type="reset" value="Clear Check Marks"> <BR>';
+	print"\n";
+
+
+
+  }
+	if ( $output_mode eq 'full' ) {
+	    if ( $form{'FULL_ROW'} ) {
+		%row = %firstrow;
+		&eval_form_atr('FULL_ROW');
+	    } else {
+		&PrintVars(%firstrow);
+	    }
+	} else {
+	    if ( $form{'BEGIN_TAB'} ) {
+	    	&eval_form_atr('BEGIN_TAB');
+	    } else {
+		&PrintTabHead;
+	    }
+	    if ( $form{'TAB_ROW'} ) {
+		%row = %firstrow;
+	    	&eval_form_atr('TAB_ROW');
+	    } else {
+		&PrintTabVars(%firstrow);
+	    }
+	}
+	do {
+	    $numrows++;
+	    if ( $output_mode eq 'full' ) {
+		if ( $form{'FULL_ROW'} ) {
+		    %row = %myrow;
+		    &eval_form_atr('FULL_ROW');
+		} else {
+		    &PrintVars(%myrow);     # print in full screen mode
+		}
+	    } else {
+		if ( $form{'TAB_ROW'} ) {
+		    %row = %myrow;
+		    &eval_form_atr('TAB_ROW');
+		} else {
+		    &PrintTabVars(%myrow);  # print in tabular screen mode
+		}
+	    }
+	} while( (%myrow = &dbi_nextrow) && $numrows < $rowcount );
+    } else {
+	if ( $form{'FULL_ROW'} ) {
+	    %row = %firstrow;
+	    &eval_form_atr('FULL_ROW');
+	} else {
+	    &PrintVars(%firstrow);
+	}
+    }
+# Next statement added by AEE, aug 31, 98.
+    if($formname eq "images" || $formname eq "daily_images"){
+      print '</FORM>';
+    }
+    if ( $output_mode eq 'tab' ) {
+	if ( $form{'END_TAB'} ) {
+	    &eval_form_atr('END_TAB');
+	} else {
+	    &PrintTabEnd;
+	}
+    }
+
+    &wdb_usage if defined &wdb_usage;	# Update usage statistics (if defined)
+
+    &dbi_disconnect;
+    if ( $numrows == $rowcount ) {
+	print "<p><hr><em>A <b>maximum</b> of $rowcount were retrieved \n";
+	print "- any remaining rows were ignored.</em>\n";
+    } elsif ( $numrows > 1 ) {
+	print "<p><hr><em>A total of $numrows were retrieved</em>\n";
+    }
+    &html_tail;
+    print "</BODY></HTML>";
+
+    ### DEBUG ###
+    if ( $debug ) {
+	print "<HR><h2>Variables from form</h2>\n";
+	$formvars = &PrintVariablesShort(%in);
+	print "$formvars <HR><p>\n";
+    }
+
+    if ( $debug ) {
+	print "<h2>Query</h2>\n";
+	print "use $form{'DATABASE'}<br>\ngo<br>\n";
+	print "select $selectlist from $form{'TABLE'}<br>\n";
+	print "$wherelist <br>\n";
+	print "<hr>\n";
+    }
+    ##############
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE       Print variabels in 'full-screen' format.  
+# 
+#.REMARKS 
+#
+#.RETURNS
+#------------------------------------------------------------------------------
+sub PrintVars 
+{
+    local (%val) = @_;
+
+    if ( $html3browser ) {
+	&PrintVars_HTML3(%val);
+	return;
+    }
+
+    #----------------------------
+    # Find max length of titles.
+    #----------------------------
+    $max = 0;
+    foreach $f ( @fields ) {
+	$max = length($field{$f,'label'}) if length($field{$f,'label'}) > $max;
+    }
+    $format = "%-" . $max . "s";
+
+    #-------------
+    # Print header
+    #-------------
+    if ( $form{'RECTOP'} ) {
+	$rectop = eval $form{'RECTOP'};
+	if ( $@ ) {
+	    print "Error in the 'RECTOP' attribute :<p>\n $@\n";
+	    die "Exiting...\n";
+	}
+	print "<h2>$rectop</h2>\n";
+    }
+    print "<ul>\n";
+
+    #-----------------------
+    # Now print each field.
+    #-----------------------
+    foreach $f ( @fields ) {
+	next if defined $field{$f,'hidden'};	# Ignore hidden fields
+	next if defined $field{$f,'no_full'};	# Ignore no_full fields
+
+        print DEBUG "html attribute for $f = $field{$f,'html'} \n";
+
+	print "<br>\n" if ( ! defined $field{$f,'sameline'} );
+	print "</ul>".&eval_attr($f,'html')."<ul>" if defined $field{$f,'html'};
+	print "<li>\n" if ( ! defined $field{$f,'sameline'} );
+
+	print " <TT><b>";
+	if ( $field{$f,'help'} ) {
+	    $help = &eval_attr( $f,'help');
+	    print "<a href=\"";
+	    print $form{'DOCURL'} if ( $help =~ /^#.*/ );
+	    print $help . "\">";
+	    print $field{$f,'label'};
+	    print "</a>";
+	} else {
+	    print $field{$f,'label'};
+	}
+	print "." x ($max - length($field{$f,'label'}))
+			    if ( ! defined $field{$f,'sameline'} );
+	print "</b></TT> :";
+	$value = &Value( $f, $val{$f} );
+	print " $value"; 
+	print " $field{$f,'unitlabel'}" if ( $field{$f,'unitlabel'} );
+
+	#print "<br>\n";
+    }
+    print "</ul>\n";
+    print "<hr>\n";
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Print variables in 'full-screen' mode using HTML3 tags.
+#
+#.REMARKS
+#
+#.RETURNS	  
+#------------------------------------------------------------------------------
+
+sub PrintVars_HTML3
+{
+    local (%val) = @_;
+
+#   print @fields[49]; this is "send_data" fieldname.
+    $modify = "No";
+    $sendata =  &Value( "send_data", $val{"send_data"} );
+    $sendata =~ tr/ //d; # remove blanks.
+    if($sendata eq "No"){
+      $modify = "Yes";
+      $jpg_val = &Value( "jpg", $val{"jpg"} );
+      $jpg_val =~ tr/ //d; # remove blanks.
+      $fn_val = &Value( "filename", $val{"filename"} );
+      $fn_val =~ tr/ //d; # remove blanks.
+    }
+
+    #-------------
+    # Print header
+    #-------------
+    if ( $form{'RECTOP'} ) {
+	$rectop = eval $form{'RECTOP'};
+	if ( $@ ) {
+	    print "Error in the 'RECTOP' attribute :<p>\n $@\n";
+	    die "Exiting...\n";
+	}
+	print "<h2>$rectop</h2>\n";
+    }
+
+    print "<table border=1 cellspacing=1>\n";
+    #-----------------------
+    # Now print each field.
+    #-----------------------
+    foreach $f ( @fields ) {
+	next if defined $field{$f,'hidden'};	# Ignore hidden fields
+	next if defined $field{$f,'no_full'};	# Ignore no_full fields
+
+        print DEBUG "html attribute for $f = $field{$f,'html'} \n";
+        print DEBUG "help attribute for $f = $field{$f,'help'} \n";
+
+	print "</tr><tr>\n" if ( ! defined $field{$f,'sameline'} );
+	print "<td colspan=4>" .&eval_attr($f,'html')."</td></tr><tr>" if defined $field{$f,'html'};
+	#print "<li>\n" if ( ! defined $field{$f,'sameline'} );
+
+	print "<th align=left>"; 
+	if ( $field{$f,'help'} ) {
+	    $help = &eval_attr( $f,'help');
+	    print "<a href=\"";
+	    print $form{'DOCURL'} if ( $help =~ /^#.*/ );
+	    print $help . "\">";
+	    print $field{$f,'label'};
+	    print "</a>";
+	} else {
+	    print $field{$f,'label'};
+	}
+	print "</th>";
+	$value = &Value( $f, $val{$f} );
+        if($modify eq "Yes") {
+          if($f eq "jpg") {
+            $value= "jpg";
+          }
+          if($f eq "filename") {
+#            $value= substr($value,81);
+            $value= substr($value,length($value)-16);
+          }
+        }
+
+	print " <td align=left> $value"; 
+	print " $field{$f,'unitlabel'}" if ( $field{$f,'unitlabel'} );
+	print "</td>\n";
+    }
+    print "</table>\n";
+    print "<hr>\n";
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Print collumn headers for tabular output.
+#
+#.REMARKS
+#
+#.RETURNS	  
+#------------------------------------------------------------------------------
+sub PrintTabHead 
+{
+    if ( $html3browser ) {
+	&PrintTabHead_HTML3;
+	return;
+    }
+
+    local( $len );
+
+    print "<pre><b>\n";
+    foreach $f ( @fields ) {
+	if ( &FieldInTab( $f ) ) {
+	    if ( $output_mode eq 'tab' && $field{$f,'tablen'} ) {
+		$len = $field{$f,'tablen'};
+	    } else {
+		$len = $field{$f,'length'};
+	    }
+	    if ( $field{$f,'help'} ) {
+		$help = &eval_attr( $f,'help');
+		print "<a href=\"";
+		print $form{'DOCURL'} if ( $help =~ /^#.*/ );
+		print $help . "\">";
+		printf "%-$len.$len"."s ", $field{$f,'label'};
+		print "</a>";
+	    } else {
+		printf "%-$len.$len"."s ", $field{$f,'label'};
+	    }
+	}
+    }
+    print "</b>\n";
+}
+
+sub PrintTabHead_HTML3
+{
+    local( $len );
+
+
+    print "<table border=1 cellspacing=1><tr>\n";
+    foreach $f ( @fields ) {
+	if ( &FieldInTab( $f ) ) {
+	    if ( $output_mode eq 'tab' && $field{$f,'tablen'} ) {
+		$len = $field{$f,'tablen'};
+	    } else {
+		$len = $field{$f,'length'};
+	    }
+	    print "<th>";
+	    if ( $field{$f,'help'} ) {
+		print DEBUG "help field : $field{$f,'help'}\n" if $debug;
+		$help = &eval_attr( $f,'help');
+		print DEBUG "help : $help\n" if $debug;
+		print "<a href=\"";
+		print $form{'DOCURL'} if ( $help =~ /^#.*/ );
+		print $help . "\">";
+		printf "%-$len.$len"."s", $field{$f,'label'};
+		print "</a>";
+	    } else {
+		printf "%-$len.$len"."s", $field{$f,'label'};
+	    }
+	    print "</th>";
+	}
+    }
+    print "</tr>\n";
+}
+
+sub PrintTabEnd 
+{
+    if ( $html3browser ) {
+	print "</table>\n";
+    } else {
+	print "</pre>\n";
+    }
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Print a row in tabular output format.
+#
+#.REMARKS
+#
+#.RETURNS	  
+#------------------------------------------------------------------------------
+sub PrintTabVars 
+{
+    local (%val) = @_;
+
+    if ( $html3browser ) {
+	&PrintTabVars_HTML3(%val);
+	return;
+    }
+
+    foreach $f ( @fields ) {
+	if ( &FieldInTab( $f ) ) {
+#	    $value = &Value( $f, $val{$f} );
+#	    print "$value ";
+
+# added the following statement and commented out previous 2 since if html 
+# version 4 is used, the .fts selection boxes are not displayed, AEE, aug1, 98:
+
+        &PrintTabVars_HTML3(%val);
+        return;
+
+	}
+    }
+    print "\n";
+}
+
+sub PrintTabVars_HTML3
+{
+    local (%val) = @_;
+
+    print "<tr>\n";
+
+#   print @fields[49]; this is "send_data" fieldname.
+    $modify = "No";
+    $sendata =  &Value( "send_data", $val{"send_data"} );
+    $sendata =~ tr/ //d; # remove blanks.
+    if($sendata eq "No"){ 
+      $modify = "Yes";
+      $jpg_val = &Value( "jpg", $val{"jpg"} );
+      $jpg_val =~ tr/ //d; # remove blanks.
+      $fn_val = &Value( "filename", $val{"filename"} );
+      $fn_val =~ tr/ //d; # remove blanks.
+    }
+
+    $all_val="";
+    foreach $f ( @fields ) {  # $f now contains a fieldname.
+	if ( &FieldInTab( $f ) ) {
+	    $value = &Value( $f, $val{$f} );
+            if($f eq "filename") {
+              $oval= $value;
+              $dpath =  &Value( "diskpath", $val{"diskpath"} );
+              $dpath =~ tr/ //d; # remove blanks.
+            }
+            if($modify eq "Yes") {
+              if($f eq "jpg") {
+                $value= "jpg";
+              }
+              if($f eq "filename") {
+#                $value= substr($value,81);
+                $value= substr($value,length($value)-16);
+              }
+            }
+            if( $f =~ /^preview/ || $f =~ /^more/ || $f =~ /^mark/ )
+            {
+#              this prints the More hyperlink for the given row in the tabular output:
+
+                print "<td align=center>$value</td>";
+            }
+            else
+            {
+#               this prints each field of the row (JPG and Filename are hyperlinks):
+
+# following added by AEE, aug 31, 98:
+ 
+#              if(($formname eq "images" || $formname eq "daily_images") and $f eq "filename" ) {
+              #if(($formname eq "images" || $formname eq "daily_images" || $formname eq "solwind_hdr") and $f eq "filename" ) {
+              if(($formname eq "images" || $formname eq "daily_images" || $formname eq "solwind_hdr" || $formname eq "solwind_hdr_dup") and $f eq "filename" ) {
+#               Note that $oval is something like:
+#               "http://lasco-www.nrl.navy.mil/lz_data/misc/c1/dark/960101/
+#               12000106.fts.?????????" and we need to pickup only the filename
+#               "12000106.fts" and append it to the "dpath" (diskpath) picked
+#               up earlier. A dpath example is:
+#               "/net/corona/cplex2/lz_data/misc/c2/dark/960101".
+
+                $fnpos= index($oval,".fts");
+                $fn= $dpath . "/" . substr($oval,$fnpos-8,12); 
+                if($formname eq "solwind_hdr") {
+                  $fn= $dpath . "/" . substr($oval,$fnpos-13,17); # solwind_hdr has yymmdd_hhmmss.fts names
+
+                  # following $fn should be used while diskpath is /net/corona/data/solwind/.... but
+                  # a symbolic link is still not set to /net/solardata/sd1/solwind/....                  
+                  #$fn= "/net/solardata/sd1/" . substr($dpath,index($dpath,'solwind')) . "/" . substr($oval,$fnpos-13,17)
+                }
+
+                if($formname eq "solwind_hdr_dup") {
+                  $fn= $dpath . "/" . substr($oval,$fnpos-17,21); # solwind_hdr_dup has yymmdd_hhmmssdupx.fts names
+
+                  # following $fn should be used while diskpath is /net/corona/data/solwind/.... but
+                  # a symbolic link is still not set to /net/solardata/sd1/solwind/....                  
+                  #$fn= "/net/solardata/sd1/" . substr($dpath,index($dpath,'solwind')) . "/" . substr($oval,$fnpos-17,21)
+                }
+
+                $nx1 =  &Value( "naxis1", $val{"naxis1"} );
+                $nx1 =~ tr/ //d; # remove blanks.
+                $nx2 =  &Value( "naxis2", $val{"naxis2"} );
+                $nx2 =~ tr/ //d; # remove blanks.
+                $srce= &Value( "source", $val{"source"} );
+                $srce=~ tr/ //d; # remove blanks.
+#               Source can be "NRL QL", "ALL", "NRL Level-0", or "NRL Level-1".
+#               estimates filesize for "NRL Level-1" is nx1*nx2*4 and for 
+#               others is nx1*nx2*2:
+                @srce= split(/evel-/,$srce); #see if "evel-1" present in source
+                $fsize= $nx1*$nx2*2;
+                if($#srce == 1){ #splitted soruce in two ("NRL " and "0 or 1"). 
+                  if($srce[1] eq "1") {
+                    $fsize= $fsize*2; 
+                  }
+                }
+                #if($formname eq "solwind_hdr") {
+                if($formname eq "solwind_hdr" || $formname eq "solwind_hdr_dup") {
+                  $fsize= $nx1*$nx2
+                }
+                print '<td><INPUT type="checkbox" NAME="file" VALUE="';
+#                print $fn,'  ',$nx1,'X',$nx2,'">',$value,'</td>';
+                print $fn,' ',$fsize,'">',$value,'</td>';
+                $all_val= $all_val . $fn . " ". $fsize;
+              }
+              else
+              {
+                print "<td>$value</td>";
+              }
+            }
+	}
+    }
+    print '<INPUT type="hidden" NAME="all" VALUE= "',$all_val,'">';
+# print $all_val;
+    print "</tr>\n";
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Decides if a field should be included in tabular output.
+#
+#.REMARKS
+#
+#.RETURNS	0 or 1 for yes or no.  
+#------------------------------------------------------------------------------
+sub FieldInTab
+{
+    local ($f) = @_;	# Field name
+
+    return 1 if defined $field{$f,'forcetab'};
+    return 1 if $in{"tab_$f"};
+    return 1 if $in{'extra_columns'} =~ /(\\0|^)$f(\\0|$)/;
+    if ( $key_args || $action eq "default" || $ENV{'REQUEST_METHOD'} eq 'GET'){
+	return 0 if defined $field{$f,'hidden'};
+	return 1 if ! defined $field{$f,'no_query'} 
+		 && ! defined $field{$f,'no_tab'};
+    }
+    return 0;
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Compute output value of field (eval enums, pictures etc. ..)
+#
+#.REMARKS
+#
+#.RETURNS	New value;
+#------------------------------------------------------------------------------
+sub Value 
+{
+    local( $f, $val ) = @_;
+    local( $newval );
+
+    print DEBUG "Value : $f : $val " if $debug;
+
+    if ( $val eq "NULL" 
+	|| (defined $SPEC_NULL{$field{$f,'type'}} 
+	    && $SPEC_NULL{$field{$f,'type'}} eq $val) ) {
+
+	$val = $NULL_VALUE;
+	if ( $output_mode eq 'tab' && $field{$f,'tablen'} ) {
+	    $val = sprintf("%-$field{$f,'tablen'}.$field{$f,'tablen'}s", $val);
+	} else {
+	    $val = sprintf("%-$field{$f,'length'}s", $val);
+	}
+	print DEBUG "(null)" if $debug;
+	print DEBUG "= $val\n" if $debug;
+	return $val;
+    } 
+
+    if ( $field{$f,'from_db'} ) {
+	print DEBUG "(from_db)" if $debug;
+	$val = eval $field{$f,'from_db'};
+	if ( $@ ) {
+	    print "Error in $f 's 'from_db' attribute :<p>\n $@\n";
+	    print "Please report this error.\n";
+	    die "Exiting...\n";
+	}
+    }
+    if ( $field{$f,'enum'} ) {
+	print DEBUG "(enum)" if $debug;
+	( $newval ) = $field{$f,'enum'} =~ /^.*$val=([^,]*)/;
+	
+	$val = $newval if ( $newval );
+    }
+
+    #-------------------------------
+    # Adjust output length of value
+    #-------------------------------
+    if ( $output_mode eq 'tab' && $field{$f,'tablen'} ) {
+	$val = sprintf("%-$field{$f,'tablen'}.$field{$f,'tablen'}s", $val);
+    } else {
+	$val = sprintf("%-$field{$f,'length'}s", $val);
+    }
+
+    if ( $field{$f,'url'} ) {
+	print DEBUG "(url)" if $debug;
+	$url = &eval_attr( $f,'url');
+	$val = "<a href=\"$url\">$val</a>" if $url;
+    }
+    
+    print DEBUG "= $val\n" if $debug;
+    return  $val;
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Evaluate an attribute using 'eval' - with error handling etc.
+#
+#.REMARKS	Dies on error.
+#
+#.RETURNS	The return value of the 'eval'
+#------------------------------------------------------------------------------
+sub eval_attr
+{
+    local($f, $attr, $val) = @_;
+    local($ret);
+
+    if ( $field{$f,$attr} ) {
+	$ret = eval $field{$f,$attr};
+	if ( $@ ) {
+	    print "Error in $f"."'s  '$attr' attribute :<p>\n $@\n";
+	    print "Please report this error.\n";
+	    die "Exiting...\n";
+	}
+    } else {
+	$ret = $val;
+    }
+
+    return $ret;
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Evaluate a form attribute using 'eval' - with error handling... 
+#
+#.REMARKS	Dies on error.
+#
+#.RETURNS	
+#------------------------------------------------------------------------------
+sub eval_form_atr
+{
+    local($attr) = @_;
+
+    if ( $form{$attr} ) {
+	eval $form{$attr};
+	if ( $@ ) {
+	    print "Error in the '$attr' attribute :<p>\n $@\n";
+	    print "Please report this error.\n";
+	    die "Exiting...\n";
+	}
+    }
+}
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Generate the "menu" for the form, and result pages.
+#
+#.REMARKS
+#
+#.RETURNS	nothing
+#------------------------------------------------------------------------------
+
+
+sub write_menu
+{
+    print "<hr>\n";
+
+    if ( $action eq "form" ) {
+	print "<INPUT TYPE=\"submit\" VALUE=\"Search\">";
+	print " <INPUT TYPE=\"reset\" VALUE=\"Reset\">";
+	print " <A HREF=\"$QUERY_HELP\">";
+	print "<img border=0 align=absmiddle alt=\"[Help]\" src=\"$IMAGEDIR/help_btn.gif\"></A>";
+    } else {
+	print " <a href=\"$WDB/$dbdir/$formname/form\">";
+	print "<img border=0 align=absmiddle alt=\"[Query]\" src=\"$IMAGEDIR/query_btn.gif\"></A>";
+    }
+    if ( $MAIN_MENU ) {
+	print " <a href=\"$MAIN_MENU\">";
+	print "<img border=0 align=absmiddle alt=\"[Home]\" src=\"$IMAGEDIR/home_btn.gif\"></A>";
+    }
+    if ( $action eq "form" ) {
+        print " <A HREF=\"http://lasco-www.nrl.navy.mil/wdb/query_tips.html\">";
+        print "<img border=0 align=absmiddle alt=\"[Query Tips]\" src=\"$IMAGEDIR/query_tips.gif\"></A>";
+    }
+    if ( $user_menu) {
+	print $user_menu;
+    }
+    print "<hr><p>";
+}
+
+sub add_menu
+{
+    local ($text, $href, $img) = @_;
+
+    $user_menu .= " <a href=\"$href\">";
+    if ( $img ) {
+	$user_menu .= "<img border=0 align=absmiddle alt=\"[$text]\" src=\"$img\">";
+    } else {
+	$user_menu .= "[$text]";
+    }
+    $user_menu .= "</a>";
+}
+
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE       Convert SGML special Character codings into ASCII
+#
+#.REMARKS
+#
+#.RETURNS       The converted string
+#------------------------------------------------------------------------------
+
+sub SGMLtoASCII
+{
+    local ($str) = @_;
+    $str =~ s/&gt;/>/g;
+    $str =~ s/&lt;/</g;
+    return( $str );
+}
+
+#
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#.PURPOSE	Encodes a string so it doesn't cause problems in URL.
+#
+#.REMARKS
+#
+#.RETURNS	The encoded string
+#------------------------------------------------------------------------------
+
+sub cgi_encode
+{
+    local ($str) = @_;
+    $str = &escape($str,'[\x00-\x20"#%/+;<>?\x7F-\xFF]');
+    $str =~ s/ /+/g;
+    return( $str );
+}
+
+# ===========================================================================
+# escape(): Return the passed string after replacing all characters matching
+#           the passed pattern with their %XX hex escape chars.  Note that
+#           the caller must be sure not to escape reserved URL characters
+#           (e.g. / in pathnames, ':' between address and port, etc.) and thus
+#           this routine can only be applied to each URL part separately. E.g.
+#
+#           $escname = &escape($name,'[\x00-\x20"#%/;<>?\x7F-\xFF]');
+#
+sub escape
+{
+    local($str, $pat) = @_;
+         
+    $str =~ s/($pat)/sprintf("%%%02lx",unpack('C',$1))/ge;
+    return($str);
+}
+
+# ===========================================================================
+# unescape(): Return the passed URL after replacing all %NN escaped chars
+#             with their actual character equivalents.
+#
+sub unescape
+{
+    local($url) = @_;
+
+    $url =~ s/%(..)/pack("C",hex($1))/ge;
+    return $url;
+}
+__END__
+#
+#.COPYRIGHT NOTICE
+# ==========================================================================
+# Copyright Bo Frese Rasmussen 1994 - All Rights Reserved
+# Copyright European Southern Observatory(ESO) 1994 - All Rights Reserved
+# Copyright Space Telescope - European Coordinating Facility(ST-ECF) 1994 
+# - All Rights Reserved
+# 
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for any purpose is hereby granted without fee, provided
+# that the above copyright notice appear in all copies and that both that
+# copyright notice, this permission notice, and the following disclaimer
+# appear in supporting documentation, and that the names of the copyright
+# holders, not be used in advertising or publicity pertaining to
+# distribution of the software without specific, written prior
+# permission.
+# 
+# BO FRESE RASMUSSEN, EUROPEAN SOUTHERN OBSERVATORY, AND OTHER
+# CONTRIBUTORS OF THIS SOFTWARE DISCLAIM ALL WARRANTIES WITH REGARD TO
+# THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR ANY PARTICULAR PURPOSE.  IN NO EVENT SHALL BO FRESE
+# RASMUSSEN, EUROPEAN SOUTHERN OBSERVATORY OR ANY OTHER CONTRIBUTOR BE
+# LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+# DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA, OR PROFITS,
+# WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION,
+# ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+# SOFTWARE.
+#------------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# The escape and unescape functions are taken from the wwwurl.pl package
+# developed by Roy Fielding <fielding@ics.uci.edu> as part of the Arcadia
+# project at the University of California, Irvine. It is distributed
+# under the Artistic License (included with your Perl distribution
+# files).
+# ---------------------------------------------------------------------------

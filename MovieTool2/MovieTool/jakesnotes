@@ -1,0 +1,39 @@
+
+
+write code to find BIAS
+
+write better code to find MODEL
+
+create imageresize, imagemedian, imagemin, imagemax (look at imstat.c code)
+
+find out what magic number is and why it is around 12000
+
+
+
+
+
+
+install cjpeg/djpeg to convert to and from jpegs
+look into PIT (Progressive Image Transport) file type
+remove jumptoURL from MeasureImg
+change MeasureImg naming scheme
+
+
+
+starlink software hard to use
+
+add arith operators ( log, square, squareroot, ...)
+
+
+Tools required
+	pbmtools (www.acme.com/software/pbmplus)
+	gawk (to deal with long strings that awk can't handle)
+	cjpeg/djpeg (to convert to jpegs)
+	cfitsio ( modhead, instat, pruneimage, imagearith, constarith, tofitsbp16 )
+		create imagemedian, imagemin, imagemax, imageresize(1024)		(look at imstat.c code)
+	whirlgif (to create animated gifs)
+	mpeg_encode (doesn't work, but would create mpegs)
+
+
+
+

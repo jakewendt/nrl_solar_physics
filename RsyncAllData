@@ -1,0 +1,83 @@
+#!/bin/sh -x
+#
+#	begin script RsyncAllData
+#
+#	author:		Jake
+#
+#	born on:	011201
+#
+#	purpose:	to backup up data
+#
+
+#	rsync -avzL --delete /net/corona/lasco/ /net/gaelic/lasco/
+
+#	rsync -avz --delete /net/solardata/sd6/carr_maps/ /net/gaelic/lasco/carr_maps/
+#	touch /net/gaelic/lasco/carr_maps/REDUCE_BACKED_UP_ON_DATESTAMP
+#	rsync -avz --delete /net/solardata/sd6/CMES/ /net/gaelic/lasco/CMES/
+#	touch /net/gaelic/lasco/CMES/REDUCE_BACKED_UP_ON_DATESTAMP
+#	rsync -avz --delete /net/solardata/sd6/debris/ /net/gaelic/lasco/debris/
+#	touch /net/gaelic/lasco/debris/REDUCE_BACKED_UP_ON_DATESTAMP
+#	rsync -avz --delete /net/solardata/sd5/ew_carr_maps/ /net/gaelic/lasco/ew_carr_maps/
+#	touch /net/gaelic/lasco/ew_carr_maps/REDUCE_BACKED_UP_ON_DATESTAMP
+#	rsync -avz --delete /net/solardata/sd5/exp_factor/ /net/gaelic/lasco/exp_factor/
+#	touch /net/gaelic/lasco/exp_factor/REDUCE_BACKED_UP_ON_DATESTAMP
+#	rsync -avz --delete /net/solardata/sd5/monthly/ /net/gaelic/lasco/monthly/
+#	touch /net/gaelic/lasco/monthly/REDUCE_BACKED_UP_ON_DATESTAMP
+#	rsync -avz --delete /net/solardata/sd6/polarize/ /net/gaelic/lasco/polarize/
+#	touch /net/gaelic/lasco/polarize/REDUCE_BACKED_UP_ON_DATESTAMP
+#	rsync -avz --delete /net/solardata/sd6/reduce_log/ /net/gaelic/lasco/reduce_log/
+#	touch /net/gaelic/lasco/reduce_log/REDUCE_BACKED_UP_ON_DATESTAMP
+#	chmod 700 /net/gaelic/lasco/
+
+
+
+#	rsync -avz --exclude="reduce/download" \
+#		/net/xi/pub/ /net/gaelic/pub/
+#	touch /net/gaelic/pub/REDUCE_BACKED_UP_ON_DATESTAMP
+#	chmod 700 /net/gaelic/pub
+
+mv /net/centaur/ql/ECS_YEST/E*L /net/centaur/ql/ECS/
+mv /net/centaur/ql/tmfiles/E*L /net/centaur/ql/ECS/
+mv /net/minotaur/ql/ECS_YEST/E*L /net/minotaur/ql/ECS/
+mv /net/minotaur/ql/tmfiles/E*L /net/minotaur/ql/ECS/
+rsync -avz --delete /net/minotaur/ql/ /net/centaur/ql/
+touch /net/centaur/ql/REDUCE_BACKED_UP_ON_DATESTAMP
+chmod 700 /net/centaur/ql
+
+
+
+rsync -avz --delete /net/centaur/lz/ /net/hera/lz/
+touch /net/hera/lz/REDUCE_BACKED_UP_ON_DATESTAMP
+chmod 700 /net/hera/lz
+
+
+# NOT RSYNCING HERA/MVI AS OF 030610
+#rsync -avz --delete /net/hera/mvi/ /net/xi/mvi/
+#rsync -avz /net/hera/mvi/ /net/xi/mvi/
+#touch /net/xi/mvi/REDUCE_BACKED_UP_ON_DATESTAMP
+#chmod 700 /net/xi/mvi
+
+
+# NOT RSYNCING XI/PUB AS OF 030109.  BACKING TO AIT3 TAPE.
+#rsync -avz --exclude="reduce/download" \
+#	/net/xi/pub/ /net/alpha/pub/
+#touch /net/alpha/pub/REDUCE_BACKED_UP_ON_DATESTAMP
+#chmod 700 /net/alpha/pub
+
+
+#	older CMES
+rsync -avz /net/alpha/dat2/ /net/beta/dat2/
+touch /net/beta/dat2/REDUCE_BACKED_UP_ON_DATESTAMP
+chmod 700 /net/beta/dat2
+
+#	newer CMES and stuff
+#rsync -avz --delete /net/beta/dat1/ /net/minotaur/dat1/
+rsync -avz /net/beta/dat1/ /net/minotaur/dat1/
+touch /net/minotaur/dat1/REDUCE_BACKED_UP_ON_DATESTAMP
+chmod 700 /net/minotaur/dat1
+
+
+
+#
+#	end script RsyncAllData
+#

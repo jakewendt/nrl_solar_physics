@@ -1,0 +1,201 @@
+#! /bin/sh -a
+#
+#
+#	begin script WriteReadme
+#
+#	author:	the Jake
+#	born:	000711
+#
+#	part of CDMaker
+#
+#	purpose:	Generates the Readme.txt file that is to be on the CD.
+#
+#	Modifications:
+#		000920	the Jake	Set contact to be me
+#		011115	the Jake	changed du -k to du -kL
+#				so that it follows the linked files
+#		020910 the Jake	- 	trying cat >> << EOF
+#
+#	2b called from CopyCDFiles Only
+#
+
+if [ -z "$DIR" -o -z "$CDID" -o -z "$CDNUM" -o -z "$TYPE" ]
+then
+	echo; echo "ERROR: WriteReadme is only to be called from CopyCDFiles."; echo
+	exit 1
+fi
+
+cd $CDROOT/$DIR
+cat > readme.txt << EOF
+                   LASCO DATA
+
+               CD ID#: $CDID$CDNUM
+
+EOF
+
+case $TYPE in
+        final)
+                echo "         Level 0.5 from Final (LZ CDROM) Data" >> readme.txt
+                echo "                      c1,c2,c3,c4" >> readme.txt
+                ;;
+        lz)
+                echo "         Level 0.5 from Final (LZ CDROM) Data" >> readme.txt
+                echo "                       c1,c2,c3" >> readme.txt
+                ;;
+        eit)
+                echo "         Level 0.5 from Final (LZ CDROM) Data" >> readme.txt
+                echo "                          c4" >> readme.txt
+                ;;
+        qq|ql)
+                echo "            Level 0.5 from Quick-Look Data" >> readme.txt
+                echo "                   c1,c2,c3,EIT(c4)" >> readme.txt
+                ;;
+esac
+echo >> readme.txt
+
+echo "Images taken on: " >> readme.txt
+echo "-----------------------------------------------------------" >> readme.txt
+/usr/ucb/echo -n "  " >> readme.txt
+
+for EACHDAY in `cat $CDLTS/$TYPE.$CDNUM.list | gawk -F/ '{print $1}' | sort | uniq -d`
+do
+        /usr/ucb/echo -n "$EACHDAY  " >> readme.txt
+done
+
+cat >> readme.txt << EOF
+
+-----------------------------------------------------------
+
+CONTENTS:
+
+KB      Directories
+------- ----------------
+EOF
+
+
+cd $CDROOT
+du -kL $DIR >> $DIR/readme.txt
+cd $CDROOT/$DIR
+
+
+case $TYPE in
+	lz|final)	echo '' >>readme.txt
+		echo '-----------------------------------------------------------' >>readme.txt
+		echo 'DB & UPDATE FILES' >>readme.txt
+		echo '' >>readme.txt
+		echo '*.db files for the data on this CD are included on this' >>readme.txt 
+		echo 'CD in /lasco_lz/db. The last 6 update files are in ' >>readme.txt
+		echo '/lasco_lz/updates.'   >> readme.txt
+		echo '' >>readme.txt
+		echo '*.db files and *.update files for running the *.db files ' >>readme.txt
+		echo 'may also be found on corona:/corona01/reduce_log/lz/[db,updates].' >>readme.txt
+		echo 'Old .db files are put on tape periodically, but will also' >>readme.txt
+		echo 'remain on disk indefinitely. ' >>readme.txt
+		echo '    ' >>readme.txt
+		echo '-------------------------------------------------------------' >>readme.txt
+		echo '' >>readme.txt
+		echo 'GENERAL INFORMATION' >>readme.txt
+		echo '' >>readme.txt
+		echo '  This CD-ROM contains files for the Large Angle ' >>readme.txt
+		echo 'Spectrometric COronagraph instrument package on ' >>readme.txt
+		echo 'the SOHO spacecraft. They were mastered at NRL using the mkisofs ' >>readme.txt
+		echo 'program on '`date` >>readme.txt
+		echo '' >>readme.txt
+		echo '  Images are organized in directories according to the ' >>readme.txt
+		echo 'date the images were taken, and then in sub-directories by ' >>readme.txt
+		echo 'instrument. Sub-directories are labeled C1, C2 and C3. EIT' >>readme.txt
+		echo 'images are being distributed separately by the EIT PI.' >>readme.txt
+		echo 'Images are in FITS format (Level 0.5). A file named 'img_hdr.txt'' >>readme.txt
+		echo 'in each subdirectory contains a summary of header information' >>readme.txt
+		echo '(including time of image) for each image in that subdirectory. ' >>readme.txt
+		echo 'There is also a thumbnail JPEG (*.jpg) image for each FITS image.' >>readme.txt
+		echo 'The TRANS.TBL file in each subdirectory contains a table matching' >>readme.txt
+		echo 'the 8.3 format filename which appears on non-Rock-Ridge compatible' >>readme.txt
+		echo 'operating systems with the original filename.' >>readme.txt
+		echo '' >>readme.txt
+		echo '  Calibration data (dark/lamp, FP, leb/gnd, leb/mem, door-' >>readme.txt
+		echo 'closed) may be found either on a separate CD-ROM (lz_misc_00XX), or ' >>readme.txt
+		echo 'in the directories under /net/corona/cplex2/lz_data/(misc or leb).  ' >>readme.txt
+		;;
+	eit)	echo '' >>readme.txt
+		echo '-----------------------------------------------------------' >>readme.txt
+		echo 'DB & UPDATE FILES' >>readme.txt
+		echo '' >>readme.txt
+		echo '*.db files and *.update files for the data on this CD are ' >>readme.txt
+		echo 'included on the LZ_05 CDs for the respective days.' >>readme.txt
+		echo '' >>readme.txt
+		echo '*.db files and *.update files for running the *.db files ' >>readme.txt
+		echo 'may also be found on corona:/corona01/reduce_log/lz/[db,updates].' >>readme.txt
+		echo 'Old .db files are put on tape periodically, but will also' >>readme.txt
+		echo 'remain on disk indefinitely. ' >>readme.txt
+		echo '    ' >>readme.txt
+		echo '-------------------------------------------------------------' >>readme.txt
+		echo '' >>readme.txt
+		echo 'GENERAL INFORMATION' >>readme.txt
+		echo '' >>readme.txt
+		echo '  This CD-ROM contains files for the Extreme-Ultra-Violet' >>readme.txt
+		echo 'Imaging Telescope instrument on the SOHO spacecraft. They were ' >>readme.txt
+		echo ' written to an ISO file using mkisofs on '`date` >>readme.txt 
+		echo '' >>readme.txt
+		echo '  Files are organized in directories according to the ' >>readme.txt
+		echo 'date the images were taken, and then in sub-directories by ' >>readme.txt
+		echo 'instrument. (Example: '.../960314/c4')  LASCO (c1,c2,c3)' >>readme.txt
+		echo 'images are being distributed separately. ' >>readme.txt
+		echo '' >>readme.txt
+		echo '  Files are in FITS format (Level 0.5). A file named ' >>readme.txt
+		echo '"img_hdr.txt" in each subdirectory contains a summary of header ' >>readme.txt
+		echo 'information (including time of observation) for each image in that ' >>readme.txt
+		echo 'subdirectory. There is also a thumbnail JPEG (*.jpg) image for ' >>readme.txt
+		echo 'each FITS image. The designation "first release" on CDs for April' >>readme.txt
+		echo '1996 and earlier is in lieu of a second release of SOHO data from ' >>readme.txt
+		echo 'before 960419, when processing directly from DSN tapes began.' >>readme.txt
+		echo '' >>readme.txt
+		echo '  Calibration info (dark/lamp, FP, leb/gnd, leb/mem) may' >>readme.txt
+		echo 'be found either on a separate LASCO CD-ROM (LZ_MISC_00xx), or ' >>readme.txt
+		echo 'in the directories under /net/corona/cplex2/lz_data/(misc or leb).  ' >>readme.txt
+		;;
+	qq|ql)	echo '' >>readme.txt
+		echo '-----------------------------------------------------------' >>readme.txt
+		echo '' >>readme.txt
+		echo 'GENERAL INFO:' >>readme.txt
+		echo '' >>readme.txt
+		echo '  This CD-ROM contains files for the Large Angle ' >>readme.txt
+		echo 'Spectrometric Coronagraph instrument package on the SOHO ' >>readme.txt
+		echo 'spacecraft. The ISO image was compiled by mkisofs on ' >>readme.txt
+		date >>readme.txt
+		echo 'and written to CD-R using a Windows-based CD mastering' >>readme.txt
+		echo 'application. ' >>readme.txt
+		echo '  Images are organized in directories according to the' >>readme.txt 
+		echo 'date the images were taken, and then in sub-directories by ' >>readme.txt
+		echo 'instrument. Sub-directories are labeled C1, C2, C3 and C4 (EIT). ' >>readme.txt
+		echo 'Images are in FITS format (Level 0.5). In each sub-directory ' >>readme.txt
+		echo 'there is a table called img_hdr.txt which gives a summary of ' >>readme.txt
+		echo 'each image in that sub-directory. There are also thumbnail ' >>readme.txt
+		echo 'JPEG (*.jpg) images for all images beginning March 2. ' >>readme.txt
+		;;
+esac
+
+cat >> readme.txt << EOF
+
+
+(If you have any questions, please contact
+
+	Jake Wendt
+	Naval Research Laboratory, Code 7660
+	4555 Overlook Avenue, SW
+	Washington, DC  20375-5320
+	202/404-8598
+	reduce@hercules.nrl.navy.mil
+)
+
+For more information, including an image database query,
+visit the LASCO home page at 
+
+http://lasco-www.nrl.navy.mil/lasco.html
+EOF
+
+exit
+
+#
+#	end script WriteReadme
+#

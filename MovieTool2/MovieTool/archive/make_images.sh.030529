@@ -1,0 +1,191 @@
+#!/bin/sh
+
+echo Content-type: text/html
+echo
+
+###############################################################
+cat << EOF
+<HTML>
+<h3>
+Jake's Online Movie and Image Production Tool
+</h3><br>
+
+<HEAD>
+<SCRIPT LANGUAGE="JavaScript">
+
+<!-- Some of this script and many more are available free online at -->
+<!-- The JavaScript Source!! http://javascript.internet.com -->
+
+function Start(page) {
+        OpenWin = this.open(page, "", "toolbar=yes,menubar=yes,location=yes,scrollbars=yes,resizable=yes");
+}
+
+</SCRIPT>
+</HEAD>
+
+
+
+EOF
+###############################################################
+
+LASCODIR="/export/home/apache/share/htdocs/lasco-www"
+CGIBIN="/export/home/apache/share/cgi-bin"
+ROOT="$CGIBIN/MovieTool"
+#OUTDIR=/tmp/lascodir.$$
+OUTDIR=/export/home/apache/share/htdocs/lasco-www/MovieTool/lascodir.$$
+GAWK=/net/cronus/opt/gnu/bin/gawk
+
+mkdir $OUTDIR
+
+read form_args
+
+NUMARGS=`echo $form_args | $GAWK -F\& '{print NF}'`
+
+#
+#	all values from checkboxes must be set to default values
+#	because if they are not checked, no value is passed in argument string
+#
+#	loop through all parameters setting defaults and local parameters.
+#
+
+#EMAIL=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "email" ) { print a[2]; next }}}'`
+LEVEL=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "level" ) { print a[2]; next }}}'`
+OUTSIZE=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "outsize" ) { print a[2]; next }}}'`
+OUTTYPE=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "outtype" ) { print a[2]; next }}}'`
+MAXIMUM=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "maximum" ) { print a[2]; next }}}'`
+MINIMUM=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "minimum" ) { print a[2]; next }}}'`
+COLORTABLE=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "colortable" ) { print a[2]; next }}}'`
+FILELIST=`echo $form_args | $GAWK -F\& '{for (i=1;i<=NF;i++) { split($i, a, "="); if ( a[1] == "ffile" ) { print a[2] }}}' | /usr/bin/sed 's:%2F:/:g'` 
+
+#	echo $LEVEL\<br\>
+#	echo $OUTSIZE\<br\>
+#	echo $OUTTYPE\<br\>
+#	echo $MAXIMUM\<br\>
+#	echo $MINIMUM\<br\>
+#	echo $COLORTABLE\<br\>
+
+#	rename
+#	reduce as necessary
+#	scale as necessary
+#	resize as necessary
+#	add color as necessary
+#	convert to gif or jpeg as necessary
+#	animate as necessary
+
+echo "<br>"
+echo "<br>"
+
+#if [ $OUTTYPE = "JS" ]
+#then
+	echo "<BODY OnLoad=Start('http://lasco-www.nrl.navy.mil/cgi-bin/MovieTool/jsmovie.pl\?dir=$OUTDIR\&size=$OUTSIZE');>"
+#	#	AUTOMAGICALLY LOAD NEXT PAGE FOR JS ANIMATAION SEQUENCE
+#	#	http://lasco-www.nrl.navy.mil
+#	exit
+#fi
+#<BODY OnLoad="Start("$ROOT/jsmovie.sh?$OUTROOT?$OUTSIZE");" >
+
+for each in $FILELIST
+do
+	echo "Processing ... "
+	echo $each
+	#	would like to make filename based on date
+	#	will need to install 
+	outroot=`echo $each | $GAWK -F\/ '{print $NF}'`
+	echo "<br>"
+	$ROOT/fitstopgm $each | $ROOT/pnmflip -tb | $ROOT/pnmscale -xysize $OUTSIZE $OUTSIZE | $ROOT/ppmtogif > $OUTDIR/$outroot.gif
+done
+
+
+#	GOOD UP TO HERE	Jake 030527
+
+
+
+#	CALL javascript or java movie as opposed to having inline?????
+
+
+
+
+echo "</BODY>"
+
+
+exit
+
+
+
+
+
+
+
+
+
+
+
+
+# WWW root directory without a trailing slash
+wwwroot='/export/home/apache/share/htdocs/lasco-www'
+ 
+# Put the jumpURL here	Why am I jumping???????
+#jumpURL=http://lasco-www.nrl.navy.mil
+
+MAX_FRAMES=50	#	Why 50???
+speed=3		#	frames/sec
+
+WIDTH=$OUTSIZE
+HEIGHT=$OUTSIZE
+
+NUM=`/bin/ls $OUTDIR/*.gif | tee /tmp/$$slideshow | wc -l`
+
+#wait	#	for what?
+#sleep 1	#	I'm not tired
+
+if [ $NUM -gt $MAX_FRAMES ] ; then
+	NUM=`expr $MAX_FRAMES + 0`
+fi
+
+if [ $NUM -gt 0 ]; then
+	DATE=`/bin/date -u`
+
+	cat $ROOT/movie_header.js
+	echo "var imax=$NUM;"
+	echo "var iwidth=$WIDTH;"
+	echo "var iheight=$HEIGHT;"
+	echo "var speed=$speed;"
+	cat $ROOT/movie_body1.js
+
+	sedcmd="s:$wwwroot::"
+	FRAME1=`head -1 /tmp/$$slideshow`
+	name=`echo $FRAME1 | sed $sedcmd`
+	name=`echo $FRAME1`
+	echo "<img src = \"$name\" NAME=animation ALT=\"FRAME\" width=$WIDTH height=$HEIGHT>"
+
+	cat $ROOT/movie_body2.js
+
+	COUNT=0
+	tail -$MAX_FRAMES /tmp/$$slideshow |
+	while [ true ]
+	do
+		read name
+		if [ $? -eq 1 ] ; then
+			break
+		fi
+
+		name=`echo $name | sed $sedcmd`
+		echo "urls[$COUNT]=\"$name\""
+		COUNT=`expr $COUNT + 1`
+	done
+
+	cat $ROOT/movie_footer.js
+
+	echo "<p>"
+	echo "More LASCO information:<p>"
+	echo "<A HREF=\"http://lasco-www.nrl.navy.mil\" TARGET=\"_blank\">LASCO Home Page</A>"
+	echo "<A HREF=\"http://lasco-www.nrl.navy.mil/rtmovies.html\" TARGET=\"_blank\">LASCO Real Time Movie Page</A>"
+	echo "<hr>"
+	echo "Created by Jake Wendt, LASCO/SOHO team, Interferometrics/Naval Research Lab, Washington DC - May 2003<br>"
+
+	echo "</BODY>"
+	echo "</HTML>"
+	/bin/rm /tmp/$$slideshow
+fi
+
+

@@ -1,0 +1,140 @@
+#! /bin/sh -a
+#
+#
+#	begin script CopyCDFiles
+#
+#	author:	the Jake
+#	born:	000705
+#
+#	modifications:
+#		000719 - the Jake - including jget technique
+#
+#
+#	CopyCDFiles lz 0457
+#
+#	Need to set CDLTS, CDROOT before running manually
+
+Usage() 
+{	echo
+	echo "Usage:  CopyCDFiles CDTYPE CDNUM"
+	echo
+	echo "Example:  CopyCDFiles lz 0457"
+	echo
+	return; 
+}
+
+LZExtraStuff()
+{
+	echo "  Adding additional data and structures for lz cd..."
+	mkdir catalogs
+	mkdir catalogs/daily
+	mkdir db
+	mkdir updates
+	echo -n "  Copying to db and catalogs/daily "
+	for EACHDATE in `cat $CDLTS/$TYPE.$CDNUM.list | gawk -F/ '{print $1}' | sort | uniq`
+	do
+		cp $LZ_IMG/reduce_log/db/red_$EACHDATE*db db
+		cp $LZ_IMG/catalogs/daily/c*$EACHDATE*.txt catalogs/daily
+		echo -n "."
+	done
+	echo
+	echo -n "  Copying updates "
+	for EACHFILE in `/bin/ls -1 $LZ_IMG/reduce_log/updates/update*final_lst | tail -6`
+	do
+		cp $EACHFILE updates
+		echo -n "."
+	done
+	echo
+	return;
+}
+
+if [ $# -gt 2 ]; then Usage; exit 1; fi
+
+case $1 in
+	lz|ql|eit)	TYPE=$1
+			DIR=`jget $TYPE.DIR`
+			CDID=`jget $TYPE.CDID`
+			DATA=`jget $TYPE.DATA`
+			;;
+
+	*)		Usage
+			exit 1		;;	#	also takes care of no arguments
+esac
+
+if [ -r $CDLTS/$TYPE.$2.list -a -s $CDLTS/$TYPE.$2.list ]
+then
+	CDNUM=$2
+else
+	echo "  ERROR:  List not found for $TYPE CD $2"
+	Usage
+	exit 1
+fi
+
+if [ -d "$CDROOT" ]
+then
+	echo "  Clearing out existing data..."
+	cd $CDROOT
+#	echo "About to remove files from $CDROOT"
+#	read pause
+#	/bin/rm -rf */*/*/*/*
+#	/bin/rm -rf */*/*/*
+#	/bin/rm -rf */*/*
+#	/bin/rm -rf */*
+#	/bin/rm -rf level_05/
+#	/bin/rm -rf catalogs/
+#	/bin/rm -rf db/
+#	/bin/rm -rf updates/
+
+	/bin/rm -rf lasco_ql/
+    /bin/rm -rf lasco_lz/
+    /bin/rm -rf eit_lz/
+	/bin/rm autorun.inf
+    /bin/rm *.ico
+
+#	echo "Removed files.  Is everything still OK?"
+#	read pause
+
+#	/bin/rm -rf *
+else
+	echo "Bad CDROOT"
+    exit 1
+fi
+
+echo "  Creating directory structure..."
+mkdir $DIR
+cd $DIR
+mkdir level_05
+
+if [ $TYPE = "lz" ]; then LZExtraStuff; fi
+
+echo "  Copying files..."
+cd $DATA
+for EACHFILE in `cat $CDLTS/$TYPE.$CDNUM.list`
+do
+	jcopy $EACHFILE.* $CDROOT/$DIR/level_05
+done
+echo
+
+echo "  Adding img_hdr.txt files..."
+for EACHDATECAM in `cat $CDLTS/$TYPE.$CDNUM.list | gawk -F/ '{print $1"/"$2}' | sort | uniq -d`
+do
+	jcopy $EACHDATECAM/img_hdr.txt $CDROOT/$DIR/level_05
+done
+echo
+
+cd $CDMAKER
+echo "  Writing Readme.txt"
+./WriteReadme
+echo "  Writing Autorun.inf"
+./WriteAutoRun
+echo "  Writing HTML files"
+./WriteIndexHTML $TYPE
+echo
+
+echo -n "Files Copied:" >> $STATUSLOG
+date >> $STATUSLOG
+exit
+
+#
+#	end script CopyCDFiles
+#

@@ -1,0 +1,115 @@
+#! /bin/sh
+#
+#
+#	begin script InsertCD
+#
+#	author:	the Jake
+#	born:	000621
+#
+#	part of CDMaker
+#
+#	purpose:	used when inserting a CD into a jukebox
+#
+#	modifications:	000816 - the Jake - modified for running sort of on hercules
+#
+
+if [ $# -ne 2 ]
+then
+	echo
+	echo "Usage:  InsertCD CDTYPE CDNUM"
+	echo
+	echo "Example:  InsertCD ql 0711"
+	echo "Example:  InsertCD lz 0457"
+	echo "Example:  InsertCD eit 0271"
+	echo
+	exit
+fi
+
+#if [ `hostname` != "jukebox-pc" ]; then exit; fi
+#if [ `hostname` != "corona" ]; then exit; fi
+if [ `hostname` != "gueuze" ]; then exit; fi
+
+TYPE=$1
+CDNUM=$2
+
+case $TYPE in
+#        lz)	if [ ! -d /juke/lz_05/$CDNUM ]
+#		then
+#			SLOTNUM=`expr $CDNUM + 0`	#	destroys preceding zero
+#			CDDIR="lz_05"
+#		else
+#			echo "ERROR:  LZ CD $CDNUM already exists."
+#			exit
+#		fi
+#                ;;
+#        ql)	if [ ! -d /juke/ql_05/$CDNUM ]
+#		then
+#			OLDCDNUM=`expr $CDNUM - 100`
+#			OLDCDNUM="0$OLDCDNUM"
+#			if [ -d /juke/ql_05/$OLDCDNUM ]
+#			then
+#				ls -d /juke/ql_05/$OLDCDNUM/lasco_ql/level_05/*
+#				for EACHDIR in	`ls -d1 /juke/ql_05/$OLDCDNUM/lasco_ql/level_05/*`
+#				do
+#					DATE=`echo $EACHDIR | awk -F/ '{print $7}'`
+#					echo "chmod u+w $QL_IMG/level_05/$DATE" >> cd.script
+#					echo "/bin/rm -rf $QL_IMG/level_05/$DATE" >> cd.script
+#				done
+#				/usr/local/bin/sudo autojuke -vu ql_05_$OLDCDNUM
+#				SLOTNUM=`echo $OLDCDNUM | cut -c3-4`
+#				SLOTNUM=`expr $SLOTNUM + 0`	#	destroys preceding zero
+#				if [ $SLOTNUM -eq 0 ]; then SLOTNUM=100; fi
+#				echo
+#				echo "Positioning CDs for export from slot $SLOTNUM..."
+#				echo "Please remove $OLDCDNUM."
+#				echo
+#				/usr/local/bin/sudo autojuke -X "jb0 slot $SLOTNUM"
+#				echo "rmdir /juke/ql_05/$OLDCDNUM" >> cd.suscript
+#				CDDIR="ql_05"
+#			else
+#				echo "ERROR:  Old QL CD $OLDCDNUM expected and not found."
+#				exit
+#			fi
+#		else
+#			echo "ERROR:  QL CD $CDNUM already exists."
+#			exit
+#		fi
+#                ;;
+        eit)	if [ ! -d /juke/lz_eit/$CDNUM ]
+			then
+				SLOTNUM=`expr $CDNUM - 400`	#	also destroys preceding zero
+				CDDIR="lz_eit"
+			else
+				echo "ERROR:  EIT CD $CDNUM already exists."
+				exit
+			fi
+			;;
+        *)	echo
+			echo "ERROR:  Invalid CD type. (ql,eit or lz only)"
+			echo
+			exit
+			;;
+esac
+
+echo
+echo "Positioning CDs for import into slot $SLOTNUM..."
+echo "Please insert $CDNUM."
+echo
+/usr/local/bin/sudo autojuke -I "jb0 slot $SLOTNUM"
+
+#/usr/ucb/echo "mkfs -F hrfs /dev/jb0/r$SLOTNUM"A" /export/home/jukelib /juke/$CDDIR/$CDNUM" >> cd.suscript  #  from jukebox-pc
+#/usr/ucb/echo "mkfs -F hrfs /dev/jb0/r$SLOTNUM"A" /export/raid1/jukelib /juke/$CDDIR/$CDNUM" >> cd.suscript  #  from corona
+/usr/ucb/echo "mkfs -F hrfs /dev/jb0/r$SLOTNUM"A" /data/jukelib /juke/$CDDIR/$CDNUM" >> cd.suscript  #  for gueuze
+/usr/ucb/echo >> cd.suscript
+/usr/ucb/echo "/usr/ucb/echo '/juke/$CDDIR/$CDNUM - nfs ro=sunspot:hale:solardata:redwood:lambda:calliope:gaelic:minerva:cyclops:cronus:erato:gueuze:argus:ajax:alamo:birch:creator:perseus:medusa1:cedar:maple:ares:halcyon:louis14:zeno:pythia:mahanadi:shogun:gorgon:corona:nike:lasco-rt1:lasco-rt2:lasco-rt3:lasco-rt6:lasco-rt7:lasco-rt8:vesta:hercules:midas:sunrise -' >> /etc/dfs/xfs_sharetab" >> cd.suscript
+/usr/ucb/echo >> cd.suscript
+
+STATUSLOG=$CDMAKER/CDSTATUS/$TYPE.$CDNUM.status
+/usr/ucb/echo "/usr/ucb/echo -n 'Mounted:     ' >> $STATUSLOG " >> cd.script
+/usr/ucb/echo "date >> $STATUSLOG" >> cd.script
+/usr/ucb/echo -n "Inserted:    " >> $STATUSLOG
+date >> $STATUSLOG
+
+#
+#	end script InsertCD
+#

@@ -1,0 +1,22 @@
+#! /bin/sh
+#
+#
+#
+#	purpose:	set up an at job to run CheckStatus
+#
+#
+#
+#
+
+at -s now +3hour < CheckStatusAtJob > /dev/null 2>&1
+
+CheckStatus > status.html
+
+#TEMP=`date +%y%m%d%H%M%S`
+
+#if [ ! -d Archive ]; then mkdir Archive; fi
+#cp status.html Archive/status.$TEMP
+
+#
+#
+#

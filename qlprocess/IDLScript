@@ -1,0 +1,44 @@
+#! /bin/sh -a
+#
+#
+#	begin script IDLScript
+#
+#	author:	the Jake
+#	born:	000626
+#
+#	IDLScript YREL
+#
+#	000711 - the Jake - Added make_daily_mvi_all
+#	030715	jake	added PNG keywords
+#
+#	part of FirstShift
+#
+#	purpose:	generate an IDL batch script to be run
+#
+
+YREL=$1
+
+echo
+echo "-- Building IDL Script."
+cd $FIRST_DIR/scripts
+/bin/rm idl_script.pro
+echo "cat_img,'$YREL'" > idl_script.pro
+echo "reduce_main,1" >> idl_script.pro
+echo "reduce_daily,'$YREL'" >> idl_script.pro
+echo "rt_carrmap,'$YREL'" >> idl_script.pro
+echo "make_daily_mvi_all,'$YREL','$YREL',/DO_MPG, /PNG" >> idl_script.pro
+echo "make_diff_mpeg, '$YREL', '$YREL', /PNG" >> idl_script.pro
+echo "exit" >> idl_script.pro
+echo "-- Running the following."
+cat idl_script.pro
+echo
+
+$IDL_DIR/bin/idl -32 idl_script.pro
+
+#/bin/mv $HOME/pol_list.txt $HOME/.pol_list.txt
+echo "-- Done running IDL script."
+echo
+
+#
+#	end script IDLScript
+#

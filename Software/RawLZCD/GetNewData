@@ -1,0 +1,100 @@
+#! /bin/sh -a
+#
+#	GetNewData
+#
+#
+#	born	011119
+#		by	theJake
+#
+#	purpose
+#		to determine if new data is available and download it
+#
+#	modifications
+#		020103	jake	modified to download just needed sub directories
+#						instead of downloading all subdirs and deleting
+#						them (this was easier)
+#		020306	jake	fixed missing voldesc.sfd file
+#		020319	jake	changed CDRAW to SOCDRAW
+#
+
+cd $SOCDRAW		#	/home/reduce/RawLZCD/SOCDRAW
+
+LASTDAY=`cat lastday`
+
+printf "%b\n%b\n%s\n%s\n%s\n" "cd pub/data/telemetry/LZ" "ls -l" "quit" \
+		| ftp -v sohoftp.nascom.nasa.gov > sohoftplist
+
+#cat sohoftplist | grep "SO_ALL_LZ_" | gawk '{print $9}' > datalist
+cat sohoftplist | gawk '{print $9}' | grep "200" | grep -vs "SO_ALL_LZ_" > datalist
+
+lastptr=`cat datalist | grep -n $LASTDAY | gawk -F: '{print $1}'`
+lastptr=${lastptr:-0}
+
+count=`cat datalist | wc -l`
+count=${count:-0}
+
+
+if [ $count -gt $lastptr ]
+then
+	nextptr=`expr $lastptr + 1`
+	for eachday in `tail +$nextptr datalist`
+	do
+		echo "I am downloading $eachday now..."
+		if [ ! -d $SOCDRAW/$eachday ]; then mkdir $SOCDRAW/$eachday; fi
+		cd $SOCDRAW/$eachday
+#		printf "\n" | gftp-text -d \
+#			ftp://anonymous:reduce@@sohoftp.nascom.nasa.gov/pub/data/telemetry/LZ/$eachday/voldesc.sfd
+
+		printf "%b\n%b\n%s\n%s\n%s\n%s\n" "cd pub/data/telemetry/LZ/$eachday/" "bin" \
+			"get voldesc.sfd" "quit" | ftp sohoftp.nascom.nasa.gov
+
+#		data/so/ch		#	not available after 020131
+#		data/so/def/at		#	not available after 020131
+#		data/so/g001/lz
+#		data/so/g002/lz
+#		data/so/g003/lz
+#		data/so/g004/lz
+#		data/so/g005/lz
+#		data/so/g006/lz
+#		data/so/g015/lz
+#		data/so/g016/lz
+#		data/so/g017/lz
+#		data/so/g031/lz
+#		data/so/pre/or		#	not available after 020131
+#		data/so/sdr/an		#	not available after 020131
+#		document		#	not available after 020131
+#		index			#	not available after 020131
+		for eachdir in `cat $SOCDRAW/dirstruct`
+		do
+			cd $SOCDRAW/
+			if [ ! -d $SOCDRAW/$eachday/$eachdir ]; then mkdir -p $eachday/$eachdir; fi
+			printf "%b\n%b\n%s\n%s\n%s\n" "cd pub/data/telemetry/LZ/$eachday/$eachdir/" "ls -l" "quit" \
+				| ftp sohoftp.nascom.nasa.gov | tail +2 | gawk '{print $5,$9}' > filelist
+			cd $SOCDRAW/$eachday/$eachdir/
+			for eachfile in `cat $SOCDRAW/filelist | gawk '{print $2}'`
+			do
+				#	touch $eachfile
+				if [ ! -f $eachfile ]; then echo >> $eachfile; fi
+				until [ `/bin/ls -l $eachfile | gawk '{print $5}'` -eq `grep $eachfile $SOCDRAW/filelist | gawk '{print $1}'` ]
+				do
+					echo "Getting $eachday/$eachdir/$eachfile."
+					#printf "\n" | gftp-text -d \
+					#	ftp://anonymous:reduce@@sohoftp.nascom.nasa.gov/pub/data/telemetry/LZ/$eachday/$eachdir/$eachfile
+					printf "%b\n%b\n%s\n%s\n%s\n%s\n%s\n%s\n" "cd pub/data/telemetry/LZ/$eachday/$eachdir/" "bin" \
+						"hash" "get $eachfile" "quit" | ftp sohoftp.nascom.nasa.gov
+				done
+				echo "$eachday/$eachdir/$eachfile downloaded."
+			done
+		done
+		#echo $eachday | gawk -F_ '{print $NF}' > $SOCDRAW/lastday
+		echo $eachday > $SOCDRAW/lastday
+	done
+	cd $RAWLZCD
+else
+	echo "It doesn't appear that there is any new data available"
+	exit 1
+fi
+
+#
+#	end GetNewData script
+#

@@ -1,0 +1,147 @@
+#! /bin/sh -a
+#
+#	begin script MakeCDImages
+#
+#	author:	the Jake
+#	born:	000531
+#	redesigned:	0007
+#
+#
+#	I would like this to be run on a regular basis.
+#	I am hoping that it will create CD Images without any input.
+#	It will stay a few days behind the available data and
+#	check for available disk space, never to create an image if 
+# 	there is less than 1GB free on CDIMAGES
+#	It will maintain log files of what it has done so that it
+#	can reference them to see what it has to do.
+#	It will also email me as it completes certain tasks.
+#	The email thing may get annoying, but we'll see.
+#
+#	Requires the following environment variables to be set.
+#		CDROOT	"the 'root' directory of the files to be put on CD
+#		bin
+#		OPERATOR
+#
+#	MAKE LOG ENTRY AND TO SCREEN AFTER ALMOST EVERYTHING
+#	MAINTAIN LZ.LOG, QL.LOG AND EIT.LOG FILES
+#
+#	Modifications:
+#	000622 - the Jake - added size check in LZ routine #000622
+#	000705 - the Jake - beginning modifications for redesigned methods
+#	000717 - the Jake - appears to be functioning properly with
+#				just the EIT data.
+#	000719 - the Jake - including jget technique
+#	000726 - the Jake - very happy with the performance
+#			currently functioning with all 3 types
+#	000816 - the Jake - going to attempt to make it more mobile
+#
+
+SizeToDo()
+{ 
+	LASTDATE=`cat $CDLGS/$TYPE.log | gawk '{lastdate=$2} END {print lastdate}' | gawk -F/ '{print $1}'`
+	LASTCAM=`cat $CDLGS/$TYPE.log | gawk '{lastcam=$2} END {print lastcam}' | gawk -F/ '{print $2}'`
+	CAMS=`jget $TYPE.CAMS`
+	NUM=`/bin/ls -1d [0-8]*/$CAMS | /bin/grep -ns $LASTDATE/$LASTCAM | gawk -F: '{print $1}'`
+	/bin/du -k [0-8]*/$CAMS | tail +$NUM | gawk '{S+=$1} END {print S}'
+	return ;
+}
+
+DaysToDo()
+{ 
+	LASTDATE=`cat $CDLGS/$TYPE.log | gawk '{lastdate=$2} END {print lastdate}' | gawk -F/ '{print $1}'`
+	/bin/ls -1dr [0-8]* | /bin/grep -ns $LASTDATE | gawk -F: '{print $1}'
+	return ; 
+} 
+
+if [ -z "$bin" -o -z "$OPERATOR" ]
+then
+	echo
+	echo "  All necessary environment variables are not defined."
+	echo "  Please review the script to see which need defined."
+	echo
+	exit 1
+fi
+
+CDMAKER=`pwd`
+CDISOS=$CDMAKER/CDIMAGES
+CDROOT=$CDMAKER/CDSOURCE
+CDLGS=$CDMAKER/CDLOGS
+CDLTS=$CDMAKER/CDLISTS
+CDSTATUS=$CDMAKER/CDSTATUS
+
+echo
+echo -n "Beginning CreateCDImages.sh : "
+date
+
+FREESPACE=`/bin/df -k $CDMAKER | gawk '{print $4}' | tail -1`
+
+TYPE="lz"	#	Initialize loop with lz
+
+while [ $FREESPACE -gt 1000000 ]
+do
+	echo 
+	echo "------------------------------------------------------------"
+	echo "  Freespace on $CDISOS is $FREESPACE kb."
+	echo "------------------------------------------------------------"
+	echo
+
+	echo "  Checking $TYPE Status ...";	echo
+	cd `jget $TYPE.DATA`
+
+	DAYSTODO=`DaysToDo`
+	SIZETODO=`SizeToDo`
+	echo "  Currently $SIZETODO kb over $DAYSTODO days to do.";	echo
+
+	if [ $DAYSTODO -gt `jget $TYPE.LAG` -a $SIZETODO -gt `jget LAGSIZE` ]
+	then
+		CDNUM=`cat $CDLGS/$TYPE.log | gawk '{cdnum=$1} END {print cdnum}'`
+		STATUSLOG=$CDSTATUS/$TYPE.$CDNUM.status
+		sh $CDMAKER/BuildCDList $TYPE
+		sh -a $CDMAKER/CopyCDFiles $TYPE $CDNUM
+		sh $CDMAKER/CreateImage $TYPE $CDNUM
+		/usr/ucb/mail -s "Made CD Image for $TYPE $CDNUM" $OPERATOR < /dev/null
+		#
+		#	PUSH IMAGE TO URANIA TO FREE UP SPACE ON HERCULES
+		#
+		PRE=`jget $TYPE.PRE`
+		ISONAME=$PRE$CDNUM.iso
+		cd $CDISOS
+		$bin/jpush $ISONAME urania	
+		HerculesSize=`/bin/ls -l $ISONAME | gawk '{print $5}'`
+		HerculesSize=${HerculesSize:-1}
+		UraniaSize=`printf "%s\n" "dir" | ftp urania | grep $ISONAME | gawk '{print $5}'`
+		UraniaSize=${UraniaSize:-0}
+		if [ $HerculesSize -eq $UraniaSize ]
+		then
+			/bin/rm $ISONAME
+			echo "  Moved $ISONAME to urania."
+			echo -n "To Urania:   " >> $STATUSLOG
+			date >> $STATUSLOG
+			/usr/ucb/mail -s "Moved $ISONAME to urania.  Awaiting a burn." $OPERATOR < /dev/null
+		fi
+	else
+		echo "  $TYPE data is up to lagtime.  No $TYPE data will be processed.";	echo
+		case $TYPE in
+			ql)	/usr/ucb/mail -s "Nothing left to do in MakeCDImages." $OPERATOR < /dev/null
+				break ;;
+			eit)	TYPE="ql";;
+			lz)	TYPE="eit";;
+		esac
+	fi
+
+	ISONAME=""
+	FREESPACE=`/bin/df -k $CDISOS | awk '{print $4}' | tail -1` 
+done
+
+if [ $FREESPACE -lt 1000000 ]
+then
+	echo "  Freespace has become limited.  I will not continue for now."
+	/usr/ucb/mail -s "Freespace has become limited.  Ending MakeCDImages." $OPERATOR < /dev/null
+fi
+
+echo -n "Ending MakeCDImages.sh : "
+date
+
+#
+#	end script MakeCDImages
+#

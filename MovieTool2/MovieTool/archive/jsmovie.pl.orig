@@ -1,0 +1,132 @@
+#!/usr/bin/perl -w
+
+
+#
+# Interpret CGI
+#
+use CGI;  # load CGI routines 
+$q = new CGI;  # create new CGI object 
+
+$ImagePath = $q->param('dir');
+$ImageSize = $q->param('size');
+
+###########################################
+#
+#	from original java script movie code
+#
+# WWW root directory without a trailing slash
+$wwwroot='/export/home/apache/share/htdocs/lasco-www';
+ 
+# Put the jumpURL here	Why am I jumping???????
+#jumpURL=http://lasco-www.nrl.navy.mil
+
+$MAX_FRAMES=50;	#	Why 50???
+$speed=3;		#	frames/sec
+
+$WIDTH=$OUTSIZE;
+$HEIGHT=$OUTSIZE;
+
+$NUM=`/bin/ls $OUTDIR/*.gif | tee /tmp/$$slideshow | wc -l`;
+
+#wait	#	for what?
+#sleep 1	#	I'm not tired
+
+if ( $NUM > $MAX_FRAMES ) 
+{
+	$NUM=$MAX_FRAMES;
+	#$NUM=`expr $MAX_FRAMES + 0`;
+}
+
+
+print $q->header('text/html');
+
+
+if ( $NUM > 0 )
+{
+	DATE=`/bin/date -u`;
+
+	/usr/bin/cat '$ROOT/movie_header.js';
+	print "var imax=$NUM;";
+	print "var iwidth=$WIDTH;";
+	print "var iheight=$HEIGHT;";
+	print "var speed=$speed;";
+	/usr/bin/cat $ROOT/movie_body1.js;
+
+	sedcmd="s:$wwwroot::";
+	FRAME1=`head -1 /tmp/$$slideshow`;
+	name=`print $FRAME1 | sed $sedcmd`;
+	name=`print $FRAME1`;
+	print "<img src = \"$name\" NAME=animation ALT=\"FRAME\" width=$WIDTH height=$HEIGHT>";
+
+	/usr/bin/cat $ROOT/movie_body2.js;
+
+	COUNT=0;
+	tail -$MAX_FRAMES /tmp/$$slideshow |
+	while [ true ]
+	do
+		read name;
+		if [ $? -eq 1 ] ; then
+			break;
+		fi
+
+		name=`print $name | sed $sedcmd`;
+		print "urls[$COUNT]=\"$name\"";
+		COUNT=`expr $COUNT + 1`;
+	done
+
+	/usr/bin/cat $ROOT/movie_footer.js;
+
+	print "<p>";
+	print "More LASCO information:<p>";
+	print "<A HREF=\"http://lasco-www.nrl.navy.mil\" TARGET=\"_blank\">LASCO Home Page</A>";
+	print "<A HREF=\"http://lasco-www.nrl.navy.mil/rtmovies.html\" TARGET=\"_blank\">LASCO Real Time Movie Page</A>";
+	print "<hr>";
+	print "Created by Jake Wendt, LASCO/SOHO team, Interferometrics/Naval Research Lab, Washington DC - May 2003<br>";
+
+	print "</BODY>";
+
+	print $q->end_html; # end the HTML
+	/bin/rm /tmp/$$slideshow;
+}
+
+exit;
+
+
+
+
+##############################################
+#
+# Create HTML Output
+#
+
+print $q->start_html(-title=>'Image Gallery',
+                     -background=>$background_img,
+                     -bgcolor=>$bg_color,
+                     -text=>$text_color,
+                     -link=>$link_color,
+                     -vlink=>$vlink_color,
+                     -alink=>$alink_color);  # start the HTML 
+
+print '<div align="center"><center>';
+
+print '<font face="' . $h_font . '" color="' . $h_color .'">';
+print $q->h1($ImageTitle);
+print '</font>';
+
+print '<img src="' . $ImagePath . '/' . $showImage .'">', '<br><br>';
+
+print '<p align = "center">' . $comment . '</p>';
+
+print '</center></div>';
+
+print '<div align="center"><center>', 
+        '<form NAME="buttonbar">',
+        '<input TYPE="button" VALUE="Back" onClick="history.back()">',
+        '</form>',
+        '</center></div>';
+
+
+
+################################
+
+

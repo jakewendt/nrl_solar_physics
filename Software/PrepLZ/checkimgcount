@@ -1,0 +1,14 @@
+#!/bin/sh 
+
+
+for each in `/bin/ls -1 /net/centaur/lz/leb_img/03*img | gawk -F/ '{print $NF}' | gawk -F_ '{print $1}' | uniq`
+do
+	echo $each
+	/usr/ucb/echo -n "QL:"
+	/bin/ls -l /net/minotaur/ql/raw/${each}/*.img | wc -l
+	/usr/ucb/echo -n "LZ:"
+	/bin/ls -l /net/centaur/lz/leb_img/${each}*img | wc -l
+
+done 
+
+

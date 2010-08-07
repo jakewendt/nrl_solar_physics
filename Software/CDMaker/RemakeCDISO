@@ -1,0 +1,67 @@
+#!/bin/sh -a
+
+if [ -z "$bin" -o -z "$OPERATOR" ]
+then
+	echo
+	echo "  All necessary environment variables are not defined."
+	echo "  Please review the script to see which need defined."
+	echo
+	exit 1
+fi
+
+CDMAKER=`pwd`
+CDISOS=$CDMAKER/CDIMAGES
+CDROOT=$CDMAKER/CDSOURCE
+CDLGS=$CDMAKER/CDLOGS
+CDLTS=$CDMAKER/CDLISTS
+CDSTATUS=$CDMAKER/CDSTATUS
+
+if [ ! -d $CDISOS ]; then mkdir -p $CDISOS; fi		# 020620
+if [ ! -d $CDROOT ]; then mkdir -p $CDROOT; fi		# 020620
+
+case $1 in
+	qq|lz|eit|ql|final|misclz|miscql)
+		TYPE=$1;;
+	*)  echo "TYPE $1 not found"
+		exit 1;;
+esac
+
+CDNUM=$2
+
+STATUSLOG=$CDSTATUS/$TYPE.$CDNUM.status
+sh -a $CDMAKER/CopyCDFiles $TYPE $CDNUM
+sh $CDMAKER/CreateImage $TYPE $CDNUM
+/usr/ucb/mail -s "Made CD Image for $TYPE $CDNUM" $OPERATOR < /dev/null
+
+
+
+sudo sh -a $CDMAKER/VerifyISOFiles $TYPE $CDNUM
+
+
+
+#
+#	PUSH IMAGE TO URANIA TO FREE UP SPACE ON HERCULES
+#
+PRE=`jget $TYPE.PRE`
+ISONAME=$PRE$CDNUM.iso
+cd $CDISOS
+$bin/jpush $ISONAME urania	
+HerculesSize=`/bin/ls -l $ISONAME | gawk '{print $5}'`
+HerculesSize=${HerculesSize:-1}
+#	UraniaSize=`printf "%s\n" "dir" | ftp urania | grep $ISONAME | gawk '{print $5}'`	#	SmartFTP
+#UraniaSize=`printf "%s\n" "dir" | ftp urania | grep $ISONAME | gawk '{print $3}'`	#	FtpXQ
+UraniaSize=`ftp-urania-size $ISONAME`
+UraniaSize=${UraniaSize:-0}
+
+if [ $HerculesSize -eq $UraniaSize ]
+then
+	/bin/rm $ISONAME
+	echo "  Moved $ISONAME to urania."
+	/usr/ucb/echo -n "To Urania:   " >> $STATUSLOG
+	date >> $STATUSLOG
+	/usr/ucb/mail -s "Moved $ISONAME to urania.  Awaiting a burn." $OPERATOR < /dev/null
+fi
+
+#
+#	end script RemakeCDISO
+#

@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+#	begin script MakeDataTechCD
+#
+#
+#	jake
+#	born 020409
+#
+#
+
+DATE=`date +%y%m%d`
+
+$bin/mkisofs -o /net/cedar/pub/CDs/DataTech-${DATE}.iso -r -v -l -T -f -J \
+	-x $HOME/Documentation/Software/RawLZCD/SOCDRAW \
+	-x $HOME/Documentation/Software/RawLZCD/CDSOURCE \
+	-x $HOME/Documentation/Software/RawLZCD/CDIMAGES \
+	-x $HOME/Documentation/Software/RawLZCD/download \
+	-x $HOME/Documentation/Software/CDMaker/CDSOURCE \
+	-x $HOME/Documentation/Software/CDMaker/CDIMAGES \
+	-x $HOME/Documentation/Software/PrepLZ/img_hdrs \
+	-x $HOME/Documentation/net.corona \
+	-x $HOME/Documentation/UNSORTED/idlpros/wrunmoviem/\*.mvi \
+	-x $HOME/Documentation/UNSORTED/idlpros/volrendr/\*.dat \
+	-x $HOME/Documentation/projects/cfitsio/cfitsio/\*.o \
+	-x $HOME/Documentation/cfitsio/cfitsio/\*.o \
+	-V Data_Tech_Handbook $HOME/Documentation
+
+
+#
+#	end script MakeDataTechCD
+#

@@ -1,0 +1,30 @@
+#! /bin/sh -v
+#
+#
+#	begin script MountAll
+#
+#	author:	the Jake
+#	born:	000621
+#
+#	part of CDMaker
+#
+#	purpose:	used after multiple InsertCD's to mount all the new CDs
+#
+
+echo "autojuke -vM" >> cd.suscript
+echo "showmount -e" >> cd.suscript
+
+sh -v cd.script
+temp=`date +%y%m%d%H%M%S`
+if [ ! -d OLDSCRIPTS ]; then mkdir OLDSCRIPTS; fi
+mv cd.script OLDSCRIPTS/$temp.script
+
+/usr/local/bin/sudo sh -v cd.suscript
+temp=`date +%y%m%d%H%M%S`
+if [ ! -d OLDSCRIPTS ]; then mkdir OLDSCRIPTS; fi
+mv cd.suscript OLDSCRIPTS/$temp.suscript
+
+
+#
+#	end script MountAll
+#

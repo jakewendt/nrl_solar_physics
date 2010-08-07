@@ -1,0 +1,80 @@
+#! /bin/sh -a
+#
+#
+#	begin script CopyRawCDFiles
+#
+#	author:	the Jake
+#	born:	000705
+#
+#	modifications:
+#		000719 - the Jake - including jget technique
+#		011114 - the jake - began trying to link file instead of copy them
+#
+#
+#	CopyCDFiles 1266
+#
+#	Need to set CDLTS, CDROOT before running manually
+#
+#	part of RawLZCD
+#
+#	purpose:	Copies/Links files to CD structure
+#
+#	020318	Jake	Added CD-NUMBER line 
+#
+
+Usage()
+{	echo
+	echo "Usage:  $0 CDNUM"
+	echo
+	echo "Example:  $0 1266"
+	echo
+	return;
+}
+
+if [ $# -ne 1 ]; then Usage; exit 1; fi
+
+if [ -r $CDLTS/$1.list -a -s $CDLTS/$1.list ]
+then
+	CDNUM=$1
+else
+	echo "  ERROR:  List not found for $TYPE CD $1"
+	Usage
+	exit 1
+fi
+
+if [ -d "$CDROOT" ]
+then
+	echo "  Clearing out existing data..."
+	cd $CDROOT
+	/bin/rm -rf data/
+	/bin/rm -rf document/
+	/bin/rm -rf index/
+	/bin/rm -rf voldesc.sfd
+else
+	echo "Bad CDROOT"
+    exit 1
+fi
+
+#echo "  Creating directory structure..."
+#for EACHDIR in `cat $SOCDRAW/dirstruct`
+#do
+#	mkdir -p $EACHDIR
+#done
+
+echo "CD-NUMBER:     $CDNUM" > $CDROOT/voldesc.sfd
+
+for EACHDIR in `/bin/sort -r $CDLTS/$CDNUM.list`
+do
+	#cd $SOCDRAW/SO_ALL_LZ_$EACHDIR
+	cd $SOCDRAW/$EACHDIR
+	cat ./voldesc.sfd >> $CDROOT/voldesc.sfd
+	find ./* -type f -exec jlink {} $CDROOT \;	#	newest first
+done
+
+/usr/ucb/echo -n "Files Copied/Linked:" >> $STATUSLOG
+date >> $STATUSLOG
+exit
+
+#
+#	end script CopyRawCDFiles
+#

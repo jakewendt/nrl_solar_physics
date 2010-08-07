@@ -1,0 +1,109 @@
+<html>
+<head>
+<title>QuickLook Processing</title>
+</head>
+<body>
+
+<table width="100%" height="100%" >
+<tr><td VALIGN="TOP">
+<h3 align="CENTER">QuickLook Processing</h3>
+<p><a href="/cgi-bin/reduce/loglist">View unarchived QL log files</a>
+
+<p>Quick Look processing is currently done with the FirstShift Software
+package.  FirstShift automates the download from soc.nascom.nasa.gov by
+using the .netrc file to save the login and password which, if needed, is
+currently:
+	<ul>
+		<li>Login:		lasco
+		<li>Password:
+	</ul>
+
+<p>The reduction process begins and all output is directed into the log file in
+$LG/QL_'YesterdaysDate'.log or falls into an email to reduce@hercules when
+the script has completed.  These logs (not emails) are reviewed daily,
+then gzipped into the Archive/Year_Month directory.  The email is
+usually easier to read as it is the display output from IDL and
+clearly shows when procedures crash.
+
+<p>In the event that it needs to be done manually, the following applies:
+
+	<ul>
+		<li>Daily:
+		<ul>
+			<li>cd /net/corona/ql
+
+			<li>Clear the way for new data.
+			<ul>
+				<li>mv ECS_YEST/* ECS/
+				<li>mv tmfiles/ELAS*L ECS_YEST/
+			</ul>
+			<li>Get new REL and QKL files
+			<ul>
+				<li>ftp soc.nascom.nasa.gov
+				<ul>
+					<li>login:
+					<li>password:
+				</ul>
+				<li>cd tlm_files/ELASCL
+				<li>mget *yymmdd*L     (also get any *QKL files that are date stamped from the same day)
+				<li>cd ../ELASCH     (there is usually nothing here)
+				<li>mget *yymmdd*L     (also get any *QKL files that are date stamped from the same day)
+			</ul>
+
+			<li>Create IMG files
+			<ul>
+				<li>source reduce.env			;	sources environment variables
+				<li>idl
+				<ul>
+					<li>unpack_all_science
+				</ul>
+			</ul>
+
+			<li>Before continuing, check to ensure that none of the IMG files
+				in the LEB_IMG dir have been previously processed
+				(ie. exist in RAW dir)
+
+			<li>idl
+			<ul>
+				<li>cat_img, 'yymm'
+				<ul>
+					<li>;	merges partial imgs and
+					<li>;	moves heads and tails out
+				</ul>
+				<li>reduce_main, 1
+				<li>reduce_daily, 'yymmdd', 'yymmdd'
+				<li>make_daily_mvi_all, 'yymmdd', 'yymmdd', /do_mpg
+				<li>make_diff_mpeg, 'yymmdd', 'yymmdd'
+			</ul>
+		</ul>
+        <li>Weekly: (This is usually done when a chunk of LZ processing is done.)
+		<ul>
+			<li>Generate MONTHLY_IMAGES     (starting date should be the date of an existing file)
+			<ul>
+				<li>cd $MONTHLY_IMAGES
+				<li>ll 2m_orcl_01* | tail
+				<li>ll 3m_clcl_01* | tail
+
+				<li>idl
+				<ul>
+					<li>make_all_months, 'c2', 'yymmdd', 'yymmdd'
+					<li>make_all_months, 'c3', 'yymmdd', 'yymmdd'
+				</ul>
+			</ul>
+		</ul>
+	</ul>
+
+<p>Quicklook data cleanup :
+	<ul>
+		<li>REDUCE_LOG directories (compile in directories, tar and gzip after 1 month)
+		<li>RAW directory (catalog in Contents and Sizes files and delete [maintain over 40 days])
+		<li>LEB_IMG directory (general cleanup)
+		<li>LEVEL_05 (maintain about 200 days then delete)
+	</ul>
+
+
+</td></tr>
+</table>
+</body>
+</html>
+

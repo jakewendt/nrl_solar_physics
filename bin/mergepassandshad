@@ -1,0 +1,13 @@
+
+
+lines=`wc -l passwd | gawk '{print $1}'`
+line=1
+
+while [ $line -le $lines ]
+do
+	tail +$line passwd | head -1 | gawk -F: '{printf $1":"}'
+	tail +$line shadow | head -1 | gawk -F: '{printf $2":"}'
+	tail +$line passwd | head -1 | gawk -F: '{printf $3":"$4":"$5":"$6":"$7"\n"}'
+
+	line=`expr $line + 1`
+done

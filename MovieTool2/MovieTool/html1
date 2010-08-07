@@ -1,0 +1,22 @@
+
+<HTML>
+<HEAD>
+<title>
+Jake's Online Movie and Image Production Tool
+</title>
+<center><h3>
+Jake's Online Movie and Image Production Tool
+</h3></center><br>
+
+<SCRIPT LANGUAGE="JavaScript">
+
+<!-- Some of this script and many more are available free online at -->
+<!-- The JavaScript Source!! http://javascript.internet.com -->
+
+function Start(page) {
+        OpenWin = this.open(page, "", "toolbar=yes,menubar=yes,location=yes,scrollbars=yes,resizable=yes");
+}
+
+</SCRIPT>
+</HEAD>
+

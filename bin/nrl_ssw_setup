@@ -1,0 +1,96 @@
+# C shell commands to define IDL environment variables and aliases.
+#
+# This script can be used by IDL users who use csh as their interactive shell
+# to define the environment variables and aliases required by IDL
+# related commands (idl, idltool, idlhelp, idldemo) if the symbolic links to
+# the default directory (/usr/local/rsi/idl) are not being used.
+#
+# csh users should source idl_setup from their .cshrc files,
+# using the following command:
+#
+#    source /opt/local/rsi/idl_4/bin/idl_setup
+#
+# modified by RA Howard to include IDL_STARTUP,  5 Jan 96
+#             22 mar 96 S. Paswaters -  modified IDL_PATH to only include
+#					subdirs under ~/idl/bin
+#              4 Jun 96 R. Howard -  Added env vars for ephermeris s/w
+#              7 Nov 96 S. Paswaters - added NRL_LIB env variable
+#             25 Jun 97 S. Paswaters - added alias for idl5
+#             17 Dec 97 S. Paswaters - added alias for SSW
+#             15 Dec 98 D. Wang - Added idl5.2
+#              8 Oct 99 K. Newsome - Added idl5.2.1
+#	       2 Feb 00 N. Rich - Add POLDIR
+#	      22 May 00 N. Rich - Move SSW env to front and add $SSW/gen and $SSW/soho/gen to IDL_PATH
+#             16 Nov 00 K. Newsome - Added idl5.4
+#	      13 Mar 01 N. Rich - Add $SSW/soho to IDL_PATH
+#             20 Apr 01 N. Rich - Make SSW the default
+#	31 May 01 N. Rich - Add LASCO_DATA
+#	 6 Jun 01 N. Rich - Remove previous version idl aliases; name nrl_ssw_setup 
+#	14 Jun 01 N. Rich - Add SSWDB
+#	28 Jun 01 N. Rich - Use NRL_LIB/lasco instead of SSW lasco
+#
+
+setenv SSW /net/cronus/opt/local/ssw
+setenv SSW_INSTR "eit" 
+source $SSW/gen/setup/setup.ssw
+setenv SSWDB /net/corona/data2/sswdb
+
+setenv NRL_LIB /net/cronus/opt/local/idl_nrl_lib
+setenv NRL_LIB_OLD /net/cronus/opt/local/nrl_lib_old
+setenv IDL_DIR /net/cronus/opt/local/rsi/idl_5
+#Changed to idl_5 - KWN 10/22/99
+#setenv IDL_PATH  \+~/idl/bin:\+\$NRL_LIB/lasco:\+\$IDL_DIR/lib:\+\$IDL_DIR/examples
+ 
+setenv IDL_PATH  \+~/idl/bin:\+\$NRL_LIB/lasco:\+\$IDL_DIR/lib:\+\$IDL_DIR/examples
+
+setenv IDL_STARTUP $IDL_DIR/idl_startup
+
+alias idltool "setenv LM_LICENSE_FILE $IDL_DIR/bin/license.dat; $IDL_DIR/bin/idltool "
+alias idlhelp $IDL_DIR/bin/idlhelp
+alias idldemo $IDL_DIR/bin/idldemo
+
+alias idl /net/cronus/opt/local/rsi/idl_5.3/bin/idl
+
+setenv IDL_DIR /net/cronus/opt/local/rsi/idl_5.3
+setenv LM_LICENSE_FILE /net/cronus/opt/local/rsi/idl_5/bin/license.dat
+#alias idl /net/cronus/opt/ssw_idl
+#alias sswidl /net/cronus/opt/ssw_idl
+
+#
+alias insight "setenv IDL_DIR /net/cronus/opt/local/rsi/idl_5.2.1 ; setenv LM_LICENSE_FILE $IDL_DIR/license/license.dat; $IDL_DIR/bin/insight "
+
+# set environmentals required by the NRL_LIB software
+#
+
+setenv LASCO_EPHEMERIS  $NRL_LIB/lasco/astrometry/ephemeris
+setenv LASCO_EXTERNAL   $NRL_LIB/lasco/astrometry/external
+setenv LASCO_CATALOGS   $NRL_LIB/lasco/astrometry/catalogs
+setenv LASCO_ASTROMETRY $HOME		# for user output
+setenv LASCO_DATA	$NRL_LIB/lasco/data
+setenv MONTHLY_IMAGES   /net/corona/export/raid2/monthly
+setenv MON_EXP          /net/corona/export/raid2/exp_factor
+#       setenv MVIS             /net/corona/export/raid2/mvi    #       changed 010406 by the jake
+setenv MVIS             /net/hera/mvi
+#setenv TIME_CONV 	$NRL_LIB/cds/util/time		# set in SSW
+setenv HOMED 		$NRL_LIB/lasco/display
+setenv ANCIL_DATA 	$NRL_LIB/lasco/data
+#       setenv QL_IMG 		/net/corona/cplex1/flight_data  #       changed 010406 by the jake
+setenv QL_IMG           /net/minotaur/ql
+#       setenv LZ_IMG 		/net/corona/cplex2/lz_data      #       changed 010406 by the jake
+setenv LZ_IMG           /net/centaur/lz
+setenv IMAGES 		$QL_IMG
+setenv EIT_DEGRID 	$NRL_LIB_OLD/eit/data/eit_degrid
+setenv SSW_EIT_RESPONSE $SSW/soho/eit/response
+setenv RED_L1_PATH	/net/corona/corona01/reduce_log
+setenv REDUCE_L1_OPTS   DBMS
+setenv POLDIR		/net/minotaur/ql/polarize
+setenv SITE		nrl
+
+#
+# all licensed software should have an alias here
+#
+alias sf77 "setenv LM_LICENSE_FILE /etc/opt/licenses/licenses_combined; f77 "
+alias sxwp "setenv LM_LICENSE_FILE /etc/opt/licenses/licenses_combined; xwp"
+
+# alias for SSW - added S. Paswaters  17 Dec 97
+alias setssw 'setenv SSW_INSTR "\!*" ; source $SSW/gen/setup/setup.ssw /loud'

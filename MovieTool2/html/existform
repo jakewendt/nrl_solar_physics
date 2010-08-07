@@ -1,0 +1,26 @@
+
+<p>Different size images will not combine.
+Make sure that the images you are using are all the same size.
+<br>
+<br>
+Select images to make movie from this list<br>
+<FORM ACTION=/cgi-bin/MovieTool/makemovie.pl METHOD=POST>
+<INPUT TYPE=Submit Value=Submit>
+<INPUT TYPE=Reset Value=Reset>
+<br>
+
+<p>Output Format 
+<SELECT NAME="outtype">
+<OPTION VALUE="JS" SELECTED> JavaScript Movie
+<OPTION VALUE="JAVA"> Java Movie
+<OPTION VALUE="MPG1"> MPEG-1
+<OPTION VALUE="AGIF"> Animated GIF (Single Run)
+<OPTION VALUE="AGIFL"> Animated GIF (Infinite Loop)
+</SELECT>
+<BR>
+<BR>
+
+DateProcessed.TimeProcessed.PID.Size/DateTaken_TimeTaken_Camera.gif<BR>
+<BR>
+
+
